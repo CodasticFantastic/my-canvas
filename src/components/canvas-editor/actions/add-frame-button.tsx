@@ -1,11 +1,11 @@
 import { useEditorStore } from "@/store/canvas-editor/canvas-editor.store";
-import { Button } from "../shadcn/ui/button";
+import { Button } from "../../shadcn/ui/button";
 import { PlusIcon } from "lucide-react";
 
 export type AddFrameButtonProps = React.ComponentPropsWithoutRef<typeof Button>;
 
 export const AddFrameButton: React.FC<AddFrameButtonProps> = ({ ...props }) => {
-  const { addFrame } = useEditorStore();
+  const { addFrame, frames, isCanvasInitializing } = useEditorStore();
 
   const handleAddFrame = () => {
     addFrame({
@@ -17,8 +17,7 @@ export const AddFrameButton: React.FC<AddFrameButtonProps> = ({ ...props }) => {
   };
 
   return (
-    <Button onClick={handleAddFrame} {...props}>
-      <PlusIcon />
+    <Button onClick={handleAddFrame} icon={PlusIcon} isLoading={isCanvasInitializing} {...props}>
       Add Frame
     </Button>
   );

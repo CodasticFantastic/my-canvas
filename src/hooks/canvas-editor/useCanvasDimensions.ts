@@ -1,3 +1,4 @@
+import { useEditorStore } from "@/store/canvas-editor/canvas-editor.store";
 import { useState, useEffect, useRef } from "react";
 
 interface Dimensions {
@@ -6,12 +7,11 @@ interface Dimensions {
 }
 
 export const useCanvasDimensions = () => {
+  const { setIsCanvasInitializing, isCanvasInitializing } = useEditorStore();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [dimensions, setDimensions] = useState<Dimensions>({ width: 0, height: 0 });
 
   useEffect(() => {
-    // Sprawdzenie czy window istnieje (SSR safety)
     if (typeof window === "undefined") {
       return;
     }
@@ -20,21 +20,20 @@ export const useCanvasDimensions = () => {
       if (containerRef.current) {
         const { width, height } = containerRef.current.getBoundingClientRect();
         setDimensions({ width, height });
-        setIsLoading(false);
+        setIsCanvasInitializing(false);
       }
     };
 
-    // Ustawienie początkowych wymiarów
+    // Set initial dimensions
     updateDimensions();
 
-    // ResizeObserver do śledzenia zmian rozmiaru kontenera
+    // ResizeObserver to track container size changes
     const resizeObserver = new ResizeObserver(updateDimensions);
 
     if (containerRef.current) {
       resizeObserver.observe(containerRef.current);
     }
 
-    // Obsługa zmiany rozmiaru okna (fallback)
     window.addEventListener("resize", updateDimensions);
 
     return () => {
@@ -43,5 +42,5 @@ export const useCanvasDimensions = () => {
     };
   }, []);
 
-  return { containerRef, dimensions, isLoading };
+  return { containerRef, dimensions, isLoading: isCanvasInitializing };
 };

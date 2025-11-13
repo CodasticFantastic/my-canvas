@@ -1,8 +1,9 @@
 import { StateCreator } from "zustand";
-import { SaveSlice } from "./slices/save.slice";
-import { FrameSlice } from "./slices/frame.slice";
+import { CanvasEditorSaveSlice } from "./slices/save.slice";
+import { CanvasEditorFrameSlice } from "./slices/frame.slice";
+import { CanvasEditorGlobalSlice } from "./slices/global.slice";
 
-export type EditorStore = FrameSlice & SaveSlice;
+export type EditorStore = CanvasEditorFrameSlice & CanvasEditorSaveSlice & CanvasEditorGlobalSlice;
 
 export type SliceFactory<T> = StateCreator<
   EditorStore,
@@ -20,3 +21,11 @@ export type Frame = {
   elements?: unknown[];
   createdAt: string;
 };
+
+// Input Actions
+export const CanvasEditorInputActions = {
+  FrameWidthUpdate: "frame-width-update",
+  FrameHeightUpdate: "frame-height-update",
+} as const;
+
+export type CanvasEditorInputActionType = (typeof CanvasEditorInputActions)[keyof typeof CanvasEditorInputActions];

@@ -1,6 +1,7 @@
 import { Frame, SliceFactory } from "@/store/canvas-editor/canvas-editor.types";
+import { toast } from "sonner";
 
-export type FrameSlice = {
+export type CanvasEditorFrameSlice = {
   frames: Frame[];
   activeFrameId: string | null;
   addFrame: (frame: Omit<Frame, "id" | "createdAt">) => void;
@@ -10,7 +11,7 @@ export type FrameSlice = {
   duplicateFrame: (id: string) => void;
 };
 
-export const createFrameSlice: SliceFactory<FrameSlice> = (set) => ({
+export const createFrameSlice: SliceFactory<CanvasEditorFrameSlice> = (set) => ({
   frames: [],
   activeFrameId: null,
 
@@ -23,7 +24,7 @@ export const createFrameSlice: SliceFactory<FrameSlice> = (set) => ({
 
     set((state) => {
       const newFrames = [...state.frames, newFrame];
-      // Jeśli to pierwszy frame, ustaw go jako aktywny
+      // If it's the first frame, set it as active
       const newActiveFrameId = state.frames.length === 0 ? newFrame.id : state.activeFrameId;
 
       return {
@@ -42,6 +43,10 @@ export const createFrameSlice: SliceFactory<FrameSlice> = (set) => ({
       if (state.activeFrameId === id) {
         newActiveFrameId = newFrames.length > 0 ? newFrames[0].id : null;
       }
+
+      console.log(newActiveFrameId);
+
+      toast.success(`Frame "${state.frames.find((f) => f.id === id)?.name}" has been deleted.`);
 
       return {
         frames: newFrames,
