@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
+import { ThemeProvider } from "@/components/shadcn/theme-provider";
+import { ThemeSwitcher } from "@/components/shadcn/theme-switcher";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,20 +28,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} flex h-screen flex-col antialiased`}>
-        <header className="bg-background flex items-center justify-center border-b p-1">
-          <h1>My Canvas</h1>
-        </header>
-        <main className="flex flex-1 items-center justify-center overflow-auto">{children}</main>
-        <footer className="flex items-center justify-center border-t p-1">
-          <p>
-            Created by{" "}
-            <a href="https://jakubwojtysiak.online" target="_blank" rel="noopener noreferrer">
-              jakubwojtysiak.online
-            </a>
-          </p>
-        </footer>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <header className="bg-background border-b p-2">
+            <div className="container mx-auto flex items-center justify-between">
+              <h1>My Canvas</h1>
+
+              <ThemeSwitcher />
+            </div>
+          </header>
+          <main className="container mx-auto flex flex-1 items-center justify-center overflow-auto">{children}</main>
+          <footer className="flex border-t p-1">
+            <div className="container mx-auto flex items-center justify-center">
+              <p>
+                Created by{" "}
+                <a href="https://jakubwojtysiak.online" target="_blank" rel="noopener noreferrer">
+                  jakubwojtysiak.online
+                </a>
+              </p>
+            </div>
+          </footer>
+        </ThemeProvider>
       </body>
     </html>
   );
