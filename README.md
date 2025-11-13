@@ -8,4 +8,6 @@
 - Postgres
 - PrismaORM
 - Docker
+- Tailwind
+- Shadcn
 - NextAuth? (Better Auth?)
