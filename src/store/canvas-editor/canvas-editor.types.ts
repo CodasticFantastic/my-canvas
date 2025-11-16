@@ -2,8 +2,9 @@ import { StateCreator } from "zustand";
 import { CanvasEditorSaveSlice } from "./slices/save.slice";
 import { CanvasEditorFrameSlice } from "./slices/frame.slice";
 import { CanvasEditorGlobalSlice } from "./slices/global.slice";
+import { CanvasEditorStageSlice } from "./slices/stage.slice";
 
-export type EditorStore = CanvasEditorFrameSlice & CanvasEditorSaveSlice & CanvasEditorGlobalSlice;
+export type EditorStore = CanvasEditorFrameSlice & CanvasEditorSaveSlice & CanvasEditorGlobalSlice & CanvasEditorStageSlice;
 
 export type SliceFactory<T> = StateCreator<
   EditorStore,

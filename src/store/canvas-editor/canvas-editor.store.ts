@@ -4,6 +4,7 @@ import { EditorStore } from "@/store/canvas-editor/canvas-editor.types";
 import { createFrameSlice } from "@/store/canvas-editor/slices/frame.slice";
 import { createSaveSlice } from "@/store/canvas-editor/slices/save.slice";
 import { createGlobalSlice } from "./slices/global.slice";
+import { createStageSlice } from "./slices/stage.slice";
 
 export const LOCAL_STORAGE_CANVAS_EDITOR_KEY = "canvas-editor-state";
 
@@ -14,6 +15,7 @@ export const useEditorStore = create<EditorStore>()(
         ...createFrameSlice(...args),
         ...createSaveSlice(...args),
         ...createGlobalSlice(...args),
+        ...createStageSlice(...args),
       }),
       {
         name: LOCAL_STORAGE_CANVAS_EDITOR_KEY,

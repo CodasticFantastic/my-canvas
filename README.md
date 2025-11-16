@@ -11,3 +11,6 @@
 - Tailwind
 - Shadcn
 - NextAuth? (Better Auth?)
+
+
+Godzin na projekcie: 13

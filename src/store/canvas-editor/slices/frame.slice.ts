@@ -9,9 +9,10 @@ export type CanvasEditorFrameSlice = {
   updateFrame: (id: string, updates: Partial<Frame>) => void;
   setActiveFrame: (id: string | null) => void;
   duplicateFrame: (id: string) => void;
+  getActiveFrame: () => Frame | null;
 };
 
-export const createFrameSlice: SliceFactory<CanvasEditorFrameSlice> = (set) => ({
+export const createFrameSlice: SliceFactory<CanvasEditorFrameSlice> = (set, get) => ({
   frames: [],
   activeFrameId: null,
 
@@ -81,5 +82,9 @@ export const createFrameSlice: SliceFactory<CanvasEditorFrameSlice> = (set) => (
         frames: [...state.frames, duplicatedFrame],
       };
     });
+  },
+
+  getActiveFrame: () => {
+    return get().frames.find((f) => f.id === get().activeFrameId) ?? null;
   },
 });

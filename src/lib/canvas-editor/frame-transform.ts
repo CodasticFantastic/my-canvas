@@ -13,7 +13,12 @@ interface FrameTransform {
   frameY: number;
 }
 
-export const calculateFrameTransform = (canvasDimensions: CanvasDimensions, frame: Frame): FrameTransform => {
+export const calculateFrameTransform = (canvasDimensions: CanvasDimensions, frame: Frame | null): FrameTransform => {
+  if (!frame) {
+    console.error("Frame not found");
+    return { scale: 1, scaledWidth: 0, scaledHeight: 0, frameX: 0, frameY: 0 };
+  }
+
   // Calculate the scale of the frame to fit the canvas
   const scaleX = canvasDimensions.width / frame.width;
   const scaleY = canvasDimensions.height / frame.height;
