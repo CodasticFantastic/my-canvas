@@ -1,9 +1,9 @@
 "use client";
 
-import { Canvas } from "@/components/canvas-editor/layout/canvas";
+import { Canvas } from "@/canvas-editor/layout/canvas";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/shadcn/ui/resizable";
-import { CanvasRightPanel } from "@/components/canvas-editor/layout/canvas-right-panel";
-import { CanvasLeftPanel } from "@/components/canvas-editor/layout/canvas-left-panel";
+import { CanvasRightPanel } from "@/canvas-editor/layout/canvas-right-panel";
+import { CanvasLeftPanel } from "@/canvas-editor/layout/canvas-left-panel";
 
 export default function CanvasEditorPage() {
   return (
