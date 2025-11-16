@@ -15,8 +15,8 @@ export type GridSlice = {
 export const createGridSlice: SliceFactory<GridSlice> = (set) => ({
   showGrid: true,
   gridSize: 50,
-  gridColor: "rgba(229, 231, 235, 1)",
-  gridStroke: 1,
+  gridColor: "rgba(88, 88, 88, 1)",
+  gridStroke: 0.5,
 
   setGridVisible: (visible) => set({ showGrid: visible }),
   setGridSize: (size) => set({ gridSize: Math.max(1, size) }),

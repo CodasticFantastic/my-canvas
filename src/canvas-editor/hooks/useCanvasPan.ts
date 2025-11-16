@@ -77,19 +77,33 @@ export function useCanvasPan(stageRef: StageRef) {
 
   const onDragStart = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>) => {
-      if (!isPanning) {
-        e.target.stopDrag();
-      }
+      const stage = stageRef.current;
+      if (!stage) return;
+
+      // If the target is the stage, stop dragging if panning is not active
+      // if (e.target === stage) {
+      //   if (!isPanning) {
+      //     // Nie pozwalaj przeciągać sceny, jeśli panning nie jest aktywny
+      //     e.target.stopDrag();
+      //   }
+      //   return;
+      // }
     },
-    [isPanning]
+    [isPanning, stageRef]
   );
 
-  const onDragEnd = useCallback(() => {
-    const stage = stageRef.current;
-    if (!stage) return;
+  const onDragEnd = useCallback(
+    (e: Konva.KonvaEventObject<DragEvent>) => {
+      const stage = stageRef.current;
+      if (!stage) return;
 
-    setPan(stage.x(), stage.y());
-  }, [setPan, stageRef]);
+      // Aktualizujemy pan tylko jeśli zakończył się drag samej sceny
+      if (e.target === stage) {
+        setPan(stage.x(), stage.y());
+      }
+    },
+    [setPan, stageRef]
+  );
 
   const onMouseLeave = useCallback(() => {
     const stage = stageRef.current;
