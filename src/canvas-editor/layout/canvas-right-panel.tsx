@@ -2,6 +2,8 @@
 
 import { Button } from "@/components/shadcn/ui/button";
 import { useCanvasStore } from "../store/canvas-editor.store";
+import { Separator } from "@/components/shadcn/ui/separator";
+import { SettingsInput } from "../components/settings-input";
 
 export const CanvasRightPanel = () => {
   const { pages, activePageId, activeFrameId, addFrameToActivePage } = useCanvasStore();
@@ -32,6 +34,15 @@ export const CanvasRightPanel = () => {
           <p>{activeFrame ? activeFrame.name : "No frame selected"}</p>
         </div>
       </div>
+
+      <Separator />
+
+      <SettingsInput
+        label="Frame name"
+        value={activeFrame?.name ?? ""}
+        onChange={(value) => console.log(value)}
+        labelIn
+      />
     </div>
   );
 };
