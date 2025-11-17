@@ -25,7 +25,6 @@ export const Canvas = () => {
     panOffsetY,
     zoom,
     setCanvasSize: setSize,
-    pages,
     activePage,
     activeFrame,
     setActiveFrame,
