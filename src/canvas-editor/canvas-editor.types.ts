@@ -8,7 +8,8 @@ import { ElementSlice } from "./store/slices/element.slice";
 
 export type EditorStore = RootSlice & GridSlice & PageSlice & FrameSlice & ElementSlice;
 
-export type SliceFactory<T> = StateCreator<EditorStore, [], [], T>;
+// SliceFactory z obsługą persist middleware
+export type SliceFactory<T> = StateCreator<EditorStore, [["zustand/persist", unknown]], [], T>;
 
 export type Page = {
   id: string;

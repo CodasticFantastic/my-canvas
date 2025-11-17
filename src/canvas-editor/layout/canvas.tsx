@@ -15,10 +15,13 @@ import { HelloCanvas } from "../components/hello-canvas";
 import { useFrameResize } from "../hooks/useFrameResize";
 import { useFrameInteraction } from "../hooks/useFrameInteraction";
 import { Frame } from "../components/frame/Frame";
+import { useStoreHydration } from "../hooks/useStoreHydration";
+import { LoadingSpinner } from "@/components/global/loading-spinner";
 
 export const Canvas = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<Konva.Stage | null>(null);
+  const isStoreHydrated = useStoreHydration();
   const { onWheelZoom } = useCanvasZoom(stageRef);
   const { stageProps: panHandlers, cursor } = useCanvasPan(stageRef);
 
@@ -56,7 +59,7 @@ export const Canvas = () => {
 
   // Fit canvas to its container
   useLayoutEffect(() => {
-    if (!containerRef.current) return;
+    if (!isStoreHydrated || !containerRef.current) return;
     const el = containerRef.current;
     const ro = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -69,11 +72,20 @@ export const Canvas = () => {
     const rect = el.getBoundingClientRect();
     setSize(Math.floor(rect.width), Math.floor(rect.height));
     return () => ro.disconnect();
-  }, [setSize]);
+  }, [setSize, isStoreHydrated]);
 
   const hasFramesOnActivePage = !!activePage && activePage.frames.length > 0;
 
   const backgroundColor = activePage ? Color(activePage.backgroundColor).rgb().string() : "bg-background";
+
+  // Loading spinner while store is hydrating
+  if (!isStoreHydrated) {
+    return (
+      <div className="relative h-full w-full">
+        <LoadingSpinner message="Loading canvas..." />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -101,7 +113,6 @@ export const Canvas = () => {
         scaleY={zoom}
         onWheel={onWheelZoom}
         onClick={(e) => {
-          // Jeśli kliknięto na Stage (nie na frame), ustaw activeFrame na null
           const stage = e.target.getStage();
           if (e.target === stage) {
             handleStageClick();
