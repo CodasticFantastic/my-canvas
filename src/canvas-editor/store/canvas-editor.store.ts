@@ -20,6 +20,10 @@ export const useCanvasStore = create<EditorStore>()(
     }),
     {
       name: "mc-canvas-editor-storage-state",
+      partialize: (state) => ({
+        ...state,
+        liveFrameDimensions: undefined,
+      }),
     }
   )
 );

@@ -6,6 +6,8 @@ import { Frame, Page } from "@/canvas-editor/canvas-editor.types";
 
 export type FrameSlice = {
   activeFrame: Frame | null;
+  liveFrameDimensions: { x: number; y: number; width: number; height: number } | null;
+  setLiveFrameDimensions: (dimensions: { x: number; y: number; width: number; height: number } | null) => void;
   addFrameToActivePage: () => void;
   setActiveFrame: (frameId: string | null) => void;
   moveFrame: (frameId: string, position: CanvasPoint) => void;
@@ -20,25 +22,14 @@ export type FrameSlice = {
   deleteFrame: (frameId: string) => void;
 };
 
-const updatePagesAndActiveState = (
-  state: { pages: Page[]; activePage: Page | null; activeFrame: Frame | null },
-  nextPages: Page[],
-  frameId?: string
-) => {
-  const updatedFrame = frameId ? nextPages.flatMap((p) => p.frames).find((f) => f.id === frameId) : null;
-
-  const updatedActivePage = state.activePage ? (nextPages.find((p) => p.id === state.activePage?.id) ?? null) : null;
-
-  return {
-    pages: nextPages,
-    activePage: updatedActivePage,
-    activeFrame: frameId && state.activeFrame?.id === frameId ? (updatedFrame ?? state.activeFrame) : state.activeFrame,
-  };
-};
-
 export const createFrameSlice: SliceFactory<FrameSlice> = (set, get) => {
   return {
     activeFrame: null,
+    liveFrameDimensions: null,
+
+    setLiveFrameDimensions: (dimensions) => {
+      set({ liveFrameDimensions: dimensions });
+    },
 
     addFrameToActivePage: () => {
       const { activePage } = get();
@@ -119,80 +110,31 @@ export const createFrameSlice: SliceFactory<FrameSlice> = (set, get) => {
     },
 
     updateFrameName: (frameId, name) => {
-      set((state) => {
-        const nextPages = state.pages.map((page) => ({
-          ...page,
-          frames: page.frames.map((frame) => (frame.id === frameId ? { ...frame, name } : frame)),
-        }));
-
-        return updatePagesAndActiveState(state, nextPages, frameId);
-      });
+      set((state) => updateSingleFrame(frameId, (frame) => ({ ...frame, name }))(state));
     },
 
     updateFramePosition: (frameId, x, y) => {
-      set((state) => {
-        const nextPages = state.pages.map((page) => ({
-          ...page,
-          frames: page.frames.map((frame) => (frame.id === frameId ? { ...frame, x, y } : frame)),
-        }));
-
-        return updatePagesAndActiveState(state, nextPages, frameId);
-      });
+      set((state) => updateSingleFrame(frameId, (frame) => ({ ...frame, x, y }))(state));
     },
 
     updateFrameSize: (frameId, width, height) => {
-      set((state) => {
-        const nextPages = state.pages.map((page) => ({
-          ...page,
-          frames: page.frames.map((frame) => (frame.id === frameId ? { ...frame, width, height } : frame)),
-        }));
-
-        return updatePagesAndActiveState(state, nextPages, frameId);
-      });
+      set((state) => updateSingleFrame(frameId, (frame) => ({ ...frame, width, height }))(state));
     },
 
     updateFrameColor: (frameId, color) => {
-      set((state) => {
-        const nextPages = state.pages.map((page) => ({
-          ...page,
-          frames: page.frames.map((frame) => (frame.id === frameId ? { ...frame, color } : frame)),
-        }));
-
-        return updatePagesAndActiveState(state, nextPages, frameId);
-      });
+      set((state) => updateSingleFrame(frameId, (frame) => ({ ...frame, color }))(state));
     },
 
     updateFrameBorderColor: (frameId, color) => {
-      set((state) => {
-        const nextPages = state.pages.map((page) => ({
-          ...page,
-          frames: page.frames.map((frame) => (frame.id === frameId ? { ...frame, borderColor: color } : frame)),
-        }));
-
-        return updatePagesAndActiveState(state, nextPages, frameId);
-      });
+      set((state) => updateSingleFrame(frameId, (frame) => ({ ...frame, borderColor: color }))(state));
     },
 
     updateFrameBorderWidth: (frameId, width) => {
-      set((state) => {
-        const nextPages = state.pages.map((page) => ({
-          ...page,
-          frames: page.frames.map((frame) => (frame.id === frameId ? { ...frame, borderWidth: width } : frame)),
-        }));
-
-        return updatePagesAndActiveState(state, nextPages, frameId);
-      });
+      set((state) => updateSingleFrame(frameId, (frame) => ({ ...frame, borderWidth: width }))(state));
     },
 
     updateFrameBorderRadius: (frameId, radius) => {
-      set((state) => {
-        const nextPages = state.pages.map((page) => ({
-          ...page,
-          frames: page.frames.map((frame) => (frame.id === frameId ? { ...frame, borderRadius: radius } : frame)),
-        }));
-
-        return updatePagesAndActiveState(state, nextPages, frameId);
-      });
+      set((state) => updateSingleFrame(frameId, (frame) => ({ ...frame, borderRadius: radius }))(state));
     },
 
     duplicateFrame: (frameId) => {
@@ -285,3 +227,30 @@ export const createFrameSlice: SliceFactory<FrameSlice> = (set, get) => {
     },
   };
 };
+
+const updatePagesAndActiveState = (
+  state: { pages: Page[]; activePage: Page | null; activeFrame: Frame | null },
+  nextPages: Page[],
+  frameId?: string
+) => {
+  const updatedFrame = frameId ? nextPages.flatMap((p) => p.frames).find((f) => f.id === frameId) : null;
+
+  const updatedActivePage = state.activePage ? (nextPages.find((p) => p.id === state.activePage?.id) ?? null) : null;
+
+  return {
+    pages: nextPages,
+    activePage: updatedActivePage,
+    activeFrame: frameId && state.activeFrame?.id === frameId ? (updatedFrame ?? state.activeFrame) : state.activeFrame,
+  };
+};
+
+const updateSingleFrame =
+  (frameId: string, updater: (frame: Frame) => Frame) =>
+  (state: { pages: Page[]; activePage: Page | null; activeFrame: Frame | null }) => {
+    const nextPages = state.pages.map((page) => ({
+      ...page,
+      frames: page.frames.map((frame) => (frame.id === frameId ? updater(frame) : frame)),
+    }));
+
+    return updatePagesAndActiveState(state, nextPages, frameId);
+  };

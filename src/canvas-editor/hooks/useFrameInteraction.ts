@@ -1,11 +1,20 @@
 import { useCallback, useState } from "react";
 import type Konva from "konva";
 import { useCanvasStore } from "../store/canvas-editor.store";
-import { Frame } from "../canvas-editor.types";
+import type { Frame } from "../canvas-editor.types";
+import type { Dimensions } from "./useLiveDimensions";
 
-export function useFrameInteraction() {
+type UseFrameInteractionOptions = {
+  activeFrameData?: Frame | null;
+  setLiveFrameDimensions?: (dimensions: Dimensions) => void;
+  throttledSetStoreLiveFrameDimensions?: (dimensions: Dimensions) => void;
+};
+
+export function useFrameInteraction(options?: UseFrameInteractionOptions) {
   const { setActiveFrame, moveFrame, activeFrame } = useCanvasStore();
   const [hoveredFrameId, setHoveredFrameId] = useState<string | null>(null);
+
+  const { activeFrameData, setLiveFrameDimensions, throttledSetStoreLiveFrameDimensions } = options ?? {};
 
   const handleStageClick = useCallback(() => {
     setActiveFrame(null);
@@ -41,19 +50,42 @@ export function useFrameInteraction() {
     []
   );
 
-  const handleFrameDragStart = useCallback((e: Konva.KonvaEventObject<DragEvent>, isResizing: boolean) => {
-    if (isResizing) {
-      e.target.stopDrag();
-    }
-  }, []);
+  const handleFrameDragStart = useCallback(
+    (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, isResizing: boolean) => {
+      if (isResizing) {
+        e.target.stopDrag();
+        return;
+      }
+      setActiveFrame(frame.id);
+    },
+    [setActiveFrame]
+  );
+
+  const handleFrameDragMove = useCallback(
+    (frameId: string, position: { x: number; y: number }) => {
+      if (!activeFrameData || !setLiveFrameDimensions || !throttledSetStoreLiveFrameDimensions) return;
+      if (activeFrameData.id !== frameId) return;
+
+      const next: Dimensions = {
+        x: position.x,
+        y: position.y,
+        width: activeFrameData.width,
+        height: activeFrameData.height,
+      };
+      setLiveFrameDimensions(next);
+      throttledSetStoreLiveFrameDimensions(next);
+    },
+    [activeFrameData, setLiveFrameDimensions, throttledSetStoreLiveFrameDimensions]
+  );
 
   const handleFrameDragEnd = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, isResizing: boolean) => {
       if (e.target !== e.currentTarget || isResizing) return;
       const node = e.currentTarget as Konva.Group;
       moveFrame(frame.id, { x: node.x(), y: node.y() });
+      setActiveFrame(frame.id);
     },
-    [moveFrame]
+    [moveFrame, setActiveFrame]
   );
 
   const isFrameHovered = useCallback(
@@ -71,13 +103,13 @@ export function useFrameInteraction() {
   );
 
   return {
-    hoveredFrameId,
     isFrameHovered,
     isFrameActive,
     handleFrameClick,
     handleFrameMouseEnter,
     handleFrameMouseLeave,
     handleFrameDragStart,
+    handleFrameDragMove,
     handleFrameDragEnd,
     handleStageClick,
   };

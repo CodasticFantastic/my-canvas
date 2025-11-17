@@ -3,18 +3,32 @@ import { SettingsSection, SettingsInputGroup, SettingsColorRow } from "./setting
 import { SettingsInput } from "../settings-input";
 import { Separator } from "@/components/shadcn/ui/separator";
 import { ColorLike } from "color";
+import { useMemo } from "react";
 
 export const FramePropertiesSection = () => {
-  const {
-    activeFrame,
-    updateFrameName,
-    updateFramePosition,
-    updateFrameSize,
-    updateFrameColor,
-    updateFrameBorderColor,
-    updateFrameBorderWidth,
-    updateFrameBorderRadius,
-  } = useCanvasStore();
+  const activeFrame = useCanvasStore((state) => state.activeFrame);
+  const liveFrameDimensions = useCanvasStore((state) => state.liveFrameDimensions);
+  const updateFrameName = useCanvasStore((state) => state.updateFrameName);
+  const updateFramePosition = useCanvasStore((state) => state.updateFramePosition);
+  const updateFrameSize = useCanvasStore((state) => state.updateFrameSize);
+  const updateFrameColor = useCanvasStore((state) => state.updateFrameColor);
+  const updateFrameBorderColor = useCanvasStore((state) => state.updateFrameBorderColor);
+  const updateFrameBorderWidth = useCanvasStore((state) => state.updateFrameBorderWidth);
+  const updateFrameBorderRadius = useCanvasStore((state) => state.updateFrameBorderRadius);
+
+  const displayFrame = useMemo(
+    () =>
+      liveFrameDimensions && activeFrame
+        ? {
+            ...activeFrame,
+            x: liveFrameDimensions.x,
+            y: liveFrameDimensions.y,
+            width: liveFrameDimensions.width,
+            height: liveFrameDimensions.height,
+          }
+        : activeFrame,
+    [liveFrameDimensions, activeFrame]
+  );
 
   const handleNameChange = (name: string) => {
     if (activeFrame) {
@@ -51,7 +65,6 @@ export const FramePropertiesSection = () => {
   };
 
   const handleColorChange = (color: ColorLike) => {
-    console.log(color);
     if (activeFrame) {
       updateFrameColor(activeFrame.id, color);
     }
@@ -77,19 +90,19 @@ export const FramePropertiesSection = () => {
     }
   };
 
-  if (!activeFrame) {
+  if (!activeFrame || !displayFrame) {
     return null;
   }
 
   return (
     <SettingsSection title="Frame Properties">
       <div className="flex flex-col gap-3">
-        <SettingsInput label="Frame name" value={activeFrame.name} onChange={handleNameChange} labelIn />
+        <SettingsInput label="Frame name" value={displayFrame.name} onChange={handleNameChange} labelIn />
         <Separator />
         <SettingsInputGroup title="Position">
           <SettingsInput
             label="X"
-            value={activeFrame.x.toFixed(0)}
+            value={displayFrame.x.toFixed(0)}
             onChange={handleXChange}
             labelIn
             unit="px"
@@ -97,7 +110,7 @@ export const FramePropertiesSection = () => {
           />
           <SettingsInput
             label="Y"
-            value={activeFrame.y.toFixed(0)}
+            value={displayFrame.y.toFixed(0)}
             onChange={handleYChange}
             labelIn
             unit="px"
@@ -107,7 +120,7 @@ export const FramePropertiesSection = () => {
         <SettingsInputGroup title="Size">
           <SettingsInput
             label="Width"
-            value={activeFrame.width.toFixed()}
+            value={displayFrame.width.toFixed()}
             onChange={handleWidthChange}
             labelIn
             unit="px"
@@ -115,7 +128,7 @@ export const FramePropertiesSection = () => {
           />
           <SettingsInput
             label="Height"
-            value={activeFrame.height.toFixed()}
+            value={displayFrame.height.toFixed()}
             onChange={handleHeightChange}
             labelIn
             unit="px"

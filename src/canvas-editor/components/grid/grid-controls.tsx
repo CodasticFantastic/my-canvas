@@ -80,14 +80,7 @@ export const GridControls = () => {
 
           <div className="flex items-center justify-between gap-2">
             <Label htmlFor="grid-color">Grid color</Label>
-            <ColorSwitcher
-              currentColor={gridColor}
-              onChange={(color) => {
-                setGridColor(color);
-                console.log(color);
-                console.log(gridColor);
-              }}
-            />
+            <ColorSwitcher currentColor={gridColor} onChange={setGridColor} />
           </div>
         </div>
       </PopoverContent>

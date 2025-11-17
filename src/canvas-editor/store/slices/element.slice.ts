@@ -1,10 +1,22 @@
 import { CanvasPoint, SliceFactory } from "@/canvas-editor/canvas-editor.types";
 export type ElementSlice = {
+  activeElement: { frameId: string; elementId: string } | null;
+  setActiveElement: (frameId: string | null, elementId: string | null) => void;
   moveElement: (frameId: string, elementId: string, position: CanvasPoint) => void;
 };
 
 export const createElementSlice: SliceFactory<ElementSlice> = (set) => {
   return {
+    activeElement: null,
+
+    setActiveElement: (frameId, elementId) => {
+      if (frameId === null || elementId === null) {
+        set({ activeElement: null });
+        return;
+      }
+      set({ activeElement: { frameId, elementId } });
+    },
+
     moveElement: (frameId, elementId, position) => {
       set((state) => {
         const nextPages = state.pages.map((page) => ({

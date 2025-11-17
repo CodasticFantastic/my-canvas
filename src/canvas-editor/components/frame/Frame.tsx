@@ -15,7 +15,8 @@ type FrameProps = {
   onFrameClick: (frameId: string, isResizing: boolean) => void;
   onFrameMouseEnter: (frameId: string, isResizing: boolean) => void;
   onFrameMouseLeave: (isResizing: boolean, resizeHandle: string | null) => void;
-  onFrameDragStart: (e: Konva.KonvaEventObject<DragEvent>, isResizing: boolean) => void;
+  onFrameDragStart: (e: Konva.KonvaEventObject<DragEvent>, frame: FrameType, isResizing: boolean) => void;
+  onFrameDragMove?: (frameId: string, position: { x: number; y: number }) => void;
   onFrameDragEnd: (e: Konva.KonvaEventObject<DragEvent>, frame: FrameType, isResizing: boolean) => void;
   onResizeStart: (
     e: Konva.KonvaEventObject<DragEvent>,
@@ -34,6 +35,9 @@ type FrameProps = {
   ) => void;
   onResizeMouseEnter: (e: Konva.KonvaEventObject<MouseEvent>, handle: "right" | "bottom" | "left" | "top") => void;
   onResizeMouseLeave: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  onElementClick: (frameId: string, elementId: string) => void;
+  onElementDragStart: (frameId: string, elementId: string) => void;
+  onElementDragMove: (frameId: string, elementId: string, position: { x: number; y: number }) => void;
   onElementDragEnd: (frameId: string, elementId: string, position: { x: number; y: number }) => void;
 };
 
@@ -48,12 +52,16 @@ export function Frame({
   onFrameMouseEnter,
   onFrameMouseLeave,
   onFrameDragStart,
+  onFrameDragMove,
   onFrameDragEnd,
   onResizeStart,
   onResizeMove,
   onResizeEnd,
   onResizeMouseEnter,
   onResizeMouseLeave,
+  onElementClick,
+  onElementDragStart,
+  onElementDragMove,
   onElementDragEnd,
 }: FrameProps) {
   const baseBorderColor = Color(frame.borderColor).rgb().string();
@@ -70,7 +78,13 @@ export function Frame({
       onClick={() => onFrameClick(frame.id, isResizing)}
       onMouseEnter={() => onFrameMouseEnter(frame.id, isResizing)}
       onMouseLeave={() => onFrameMouseLeave(isResizing, resizeHandle)}
-      onDragStart={(e) => onFrameDragStart(e, isResizing)}
+      onDragStart={(e) => onFrameDragStart(e, frame, isResizing)}
+      onDragMove={(e) => {
+        if (!isResizing && onFrameDragMove) {
+          const node = e.currentTarget as Konva.Group;
+          onFrameDragMove(frame.id, { x: node.x(), y: node.y() });
+        }
+      }}
       onDragEnd={(e) => onFrameDragEnd(e, frame, isResizing)}
     >
       <Rect
@@ -141,6 +155,17 @@ export function Frame({
               height={el.height}
               fill={el.fill}
               draggable
+              onClick={(e) => {
+                e.cancelBubble = true;
+                onElementClick(frame.id, el.id);
+              }}
+              onDragStart={() => {
+                onElementDragStart(frame.id, el.id);
+              }}
+              onDrag={(e: Konva.KonvaEventObject<DragEvent>) => {
+                const node = e.target;
+                onElementDragMove(frame.id, el.id, { x: node.x(), y: node.y() });
+              }}
               onDragEnd={(e) => {
                 const node = e.target;
                 onElementDragEnd(frame.id, el.id, { x: node.x(), y: node.y() });

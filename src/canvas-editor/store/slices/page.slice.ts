@@ -4,6 +4,19 @@ import { Page } from "@/canvas-editor/canvas-editor.types";
 import { ColorLike } from "color";
 import { toast } from "sonner";
 
+const updateSinglePage =
+  (pageId: string, updater: (page: Page) => Page) => (state: { pages: Page[]; activePage: Page | null }) => {
+    const nextPages = state.pages.map((page) => (page.id === pageId ? updater(page) : page));
+
+    const updatedActivePage =
+      state.activePage?.id === pageId ? (nextPages.find((p) => p.id === pageId) ?? null) : state.activePage;
+
+    return {
+      pages: nextPages,
+      activePage: updatedActivePage,
+    };
+  };
+
 export type PageSlice = {
   pages: Page[];
   activePage: Page | null;
@@ -51,31 +64,11 @@ export const createPageSlice: SliceFactory<PageSlice> = (set, get) => {
     },
 
     updatePageName: (pageId, name) => {
-      set((state) => {
-        const nextPages = state.pages.map((page) => (page.id === pageId ? { ...page, name } : page));
-
-        const updatedActivePage =
-          state.activePage?.id === pageId ? (nextPages.find((p) => p.id === pageId) ?? null) : state.activePage;
-
-        return {
-          pages: nextPages,
-          activePage: updatedActivePage,
-        };
-      });
+      set((state) => updateSinglePage(pageId, (page) => ({ ...page, name }))(state));
     },
 
     updatePageBackgroundColor: (pageId, color) => {
-      set((state) => {
-        const nextPages = state.pages.map((page) => (page.id === pageId ? { ...page, backgroundColor: color } : page));
-
-        const updatedActivePage =
-          state.activePage?.id === pageId ? (nextPages.find((p) => p.id === pageId) ?? null) : state.activePage;
-
-        return {
-          pages: nextPages,
-          activePage: updatedActivePage,
-        };
-      });
+      set((state) => updateSinglePage(pageId, (page) => ({ ...page, backgroundColor: color }))(state));
     },
 
     duplicatePage: (pageId) => {

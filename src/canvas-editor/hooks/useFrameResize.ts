@@ -16,25 +16,29 @@ type ResizeStartState = {
 };
 
 export function useFrameResize() {
-  const { zoom, panOffsetX, panOffsetY, updateFrameSize, moveFrame } = useCanvasStore();
+  const { zoom, panOffsetX, panOffsetY, updateFrameSize, moveFrame, setActiveFrame } = useCanvasStore();
   const [resizeHandle, setResizeHandle] = useState<ResizeHandle | null>(null);
   const [isResizing, setIsResizing] = useState(false);
   const resizeStartRef = useRef<ResizeStartState | null>(null);
 
-  const handleResizeStart = useCallback((e: Konva.KonvaEventObject<DragEvent>, frame: Frame, handle: ResizeHandle) => {
-    e.cancelBubble = true;
-    setIsResizing(true);
-    setResizeHandle(handle);
-    resizeStartRef.current = {
-      width: frame.width,
-      height: frame.height,
-      x: e.target.x(),
-      y: e.target.y(),
-      frameX: frame.x,
-      frameY: frame.y,
-      frameId: frame.id,
-    };
-  }, []);
+  const handleResizeStart = useCallback(
+    (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, handle: ResizeHandle) => {
+      e.cancelBubble = true;
+      setIsResizing(true);
+      setResizeHandle(handle);
+      setActiveFrame(frame.id);
+      resizeStartRef.current = {
+        width: frame.width,
+        height: frame.height,
+        x: e.target.x(),
+        y: e.target.y(),
+        frameX: frame.x,
+        frameY: frame.y,
+        frameId: frame.id,
+      };
+    },
+    [setActiveFrame]
+  );
 
   const handleResizeMove = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, handle: ResizeHandle) => {
@@ -164,8 +168,9 @@ export function useFrameResize() {
       setResizeHandle(null);
       setIsResizing(false);
       resizeStartRef.current = null;
+      setActiveFrame(frame.id);
     },
-    [zoom, updateFrameSize, moveFrame]
+    [zoom, updateFrameSize, moveFrame, setActiveFrame]
   );
 
   const handleResizeMouseEnter = useCallback(
