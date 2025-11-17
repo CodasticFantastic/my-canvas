@@ -1,4 +1,5 @@
 import { CanvasPoint, SliceFactory } from "@/canvas-editor/canvas-editor.types";
+import { toast } from "sonner";
 
 export type RootSlice = {
   width: number;
@@ -11,6 +12,7 @@ export type RootSlice = {
   setCanvasSize: (w: number, h: number) => void;
   setPan: (x: number, y: number) => void;
   setZoom: (nextZoom: number, anchor?: CanvasPoint) => void;
+  resetProject: () => void;
 };
 
 export const createRootSlice: SliceFactory<RootSlice> = (set, get) => ({
@@ -24,7 +26,6 @@ export const createRootSlice: SliceFactory<RootSlice> = (set, get) => ({
 
   setCanvasSize: (w, h) => set({ width: w, height: h }),
   setPan: (x, y) => set({ panOffsetX: x, panOffsetY: y }),
-
   setZoom: (nextZoom, anchor) => {
     const { zoom, panOffsetX: x, panOffsetY: y, minZoom, maxZoom } = get();
     const clamped = Math.min(maxZoom, Math.max(minZoom, nextZoom));
@@ -38,5 +39,16 @@ export const createRootSlice: SliceFactory<RootSlice> = (set, get) => ({
     const nx = anchor.x - worldX * clamped;
     const ny = anchor.y - worldY * clamped;
     set({ zoom: clamped, panOffsetX: nx, panOffsetY: ny });
+  },
+  resetProject: () => {
+    set({
+      pages: [],
+      activePage: null,
+      activeFrame: null,
+      panOffsetX: 0,
+      panOffsetY: 0,
+      zoom: 1,
+    });
+    toast.success("Project reset");
   },
 });

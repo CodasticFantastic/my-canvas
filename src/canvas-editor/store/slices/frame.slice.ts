@@ -16,6 +16,8 @@ export type FrameSlice = {
   updateFrameBorderColor: (frameId: string, color: ColorLike) => void;
   updateFrameBorderWidth: (frameId: string, width: number) => void;
   updateFrameBorderRadius: (frameId: string, radius: number) => void;
+  duplicateFrame: (frameId: string) => void;
+  deleteFrame: (frameId: string) => void;
 };
 
 const updatePagesAndActiveState = (
@@ -191,6 +193,95 @@ export const createFrameSlice: SliceFactory<FrameSlice> = (set, get) => {
 
         return updatePagesAndActiveState(state, nextPages, frameId);
       });
+    },
+
+    duplicateFrame: (frameId) => {
+      const { activePage } = get();
+      if (!activePage) {
+        toast.error("No active page");
+        return;
+      }
+
+      set((state) => {
+        const pageIndex = state.pages.findIndex((p) => p.id === activePage.id);
+        if (pageIndex === -1) return {};
+
+        const page = state.pages[pageIndex];
+        const frameToDuplicate = page.frames.find((f) => f.id === frameId);
+        if (!frameToDuplicate) return {};
+
+        const newFrameId = nanoid();
+        const duplicatedFrame: Frame = {
+          ...frameToDuplicate,
+          id: newFrameId,
+          name: `${frameToDuplicate.name} (Copy)`,
+          x: frameToDuplicate.x + 20,
+          y: frameToDuplicate.y + 20,
+          elements: frameToDuplicate.elements.map((el) => ({
+            ...el,
+            id: nanoid(),
+          })),
+        };
+
+        const nextPages = [...state.pages];
+        const updatedPage = {
+          ...page,
+          frames: [...page.frames, duplicatedFrame],
+        };
+        nextPages[pageIndex] = updatedPage;
+
+        return {
+          pages: nextPages,
+          activePage: updatedPage,
+          activeFrame: duplicatedFrame,
+        };
+      });
+      toast.success("Frame duplicated");
+    },
+
+    deleteFrame: (frameId) => {
+      const { activePage } = get();
+      if (!activePage) {
+        toast.error("No active page");
+        return;
+      }
+
+      set((state) => {
+        const pageIndex = state.pages.findIndex((p) => p.id === activePage.id);
+        if (pageIndex === -1) return {};
+
+        const page = state.pages[pageIndex];
+        const frameToDelete = page.frames.find((f) => f.id === frameId);
+        if (!frameToDelete) return {};
+
+        const nextFrames = page.frames.filter((f) => f.id !== frameId);
+        const wasActive = state.activeFrame?.id === frameId;
+
+        const nextPages = [...state.pages];
+        const updatedPage = {
+          ...page,
+          frames: nextFrames,
+        };
+        nextPages[pageIndex] = updatedPage;
+
+        // If we are deleting the active frame, we need to set the new active frame
+        let newActiveFrame = null;
+        if (wasActive) {
+          if (nextFrames.length > 0) {
+            newActiveFrame = nextFrames[0];
+          }
+        } else {
+          // If we are not deleting the active frame, we need to keep the active frame
+          newActiveFrame = state.activeFrame;
+        }
+
+        return {
+          pages: nextPages,
+          activePage: updatedPage,
+          activeFrame: newActiveFrame,
+        };
+      });
+      toast.success("Frame deleted");
     },
   };
 };

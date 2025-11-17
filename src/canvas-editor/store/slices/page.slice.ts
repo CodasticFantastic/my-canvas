@@ -2,6 +2,7 @@ import { nanoid } from "nanoid";
 import { SliceFactory } from "@/canvas-editor/canvas-editor.types";
 import { Page } from "@/canvas-editor/canvas-editor.types";
 import { ColorLike } from "color";
+import { toast } from "sonner";
 
 export type PageSlice = {
   pages: Page[];
@@ -10,6 +11,8 @@ export type PageSlice = {
   setActivePage: (pageId: string) => void;
   updatePageName: (pageId: string, name: string) => void;
   updatePageBackgroundColor: (pageId: string, color: ColorLike) => void;
+  duplicatePage: (pageId: string) => void;
+  deletePage: (pageId: string) => void;
 };
 
 export const createPageSlice: SliceFactory<PageSlice> = (set, get) => {
@@ -73,6 +76,67 @@ export const createPageSlice: SliceFactory<PageSlice> = (set, get) => {
           activePage: updatedActivePage,
         };
       });
+    },
+
+    duplicatePage: (pageId) => {
+      set((state) => {
+        const pageToDuplicate = state.pages.find((p) => p.id === pageId);
+        if (!pageToDuplicate) return {};
+
+        const newPageId = nanoid();
+        const duplicatedPage: Page = {
+          ...pageToDuplicate,
+          id: newPageId,
+          name: `${pageToDuplicate.name} (Copy)`,
+          frames: pageToDuplicate.frames.map((frame) => ({
+            ...frame,
+            id: nanoid(),
+            elements: frame.elements.map((el) => ({
+              ...el,
+              id: nanoid(),
+            })),
+          })),
+        };
+
+        return {
+          pages: [...state.pages, duplicatedPage],
+          activePage: duplicatedPage,
+          activeFrame: duplicatedPage.frames[0] ?? null,
+        };
+      });
+      toast.success("Page duplicated");
+    },
+
+    deletePage: (pageId) => {
+      set((state) => {
+        const pageToDelete = state.pages.find((p) => p.id === pageId);
+        if (!pageToDelete) return {};
+
+        const nextPages = state.pages.filter((p) => p.id !== pageId);
+        const wasActive = state.activePage?.id === pageId;
+
+        // If we are deleting the active page, we need to set the new active page and frame
+        let newActivePage = null;
+        let newActiveFrame = null;
+
+        if (wasActive) {
+          if (nextPages.length > 0) {
+            newActivePage = nextPages[0];
+            newActiveFrame = nextPages[0].frames[0] ?? null;
+          }
+        } else {
+          // If we are not deleting the active page, we need to keep the active page and frame
+          newActivePage = state.activePage;
+          newActiveFrame = state.activeFrame;
+        }
+
+        return {
+          pages: nextPages,
+          activePage: newActivePage,
+          activeFrame: newActiveFrame,
+        };
+      });
+      toast.success("Page deleted");
     },
   };
 };
