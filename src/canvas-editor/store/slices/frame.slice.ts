@@ -8,7 +8,7 @@ export type FrameSlice = {
   activeFrame: Frame | null;
   liveFrameDimensions: { x: number; y: number; width: number; height: number } | null;
   setLiveFrameDimensions: (dimensions: { x: number; y: number; width: number; height: number } | null) => void;
-  addFrameToActivePage: () => void;
+  addFrameToActivePage: (width?: number, height?: number, name?: string) => void;
   setActiveFrame: (frameId: string | null) => void;
   moveFrame: (frameId: string, position: CanvasPoint) => void;
   updateFrameName: (frameId: string, name: string) => void;
@@ -31,7 +31,7 @@ export const createFrameSlice: SliceFactory<FrameSlice> = (set, get) => {
       set({ liveFrameDimensions: dimensions });
     },
 
-    addFrameToActivePage: () => {
+    addFrameToActivePage: (width?: number, height?: number, name?: string) => {
       const { activePage } = get();
       if (!activePage) {
         toast.error("Lack of active page. Add a page first.");
@@ -49,11 +49,11 @@ export const createFrameSlice: SliceFactory<FrameSlice> = (set, get) => {
         const frameId = nanoid();
         const newFrame: Frame = {
           id: frameId,
-          name: `Frame ${frameIndex}`,
+          name: name ?? `Frame ${frameIndex}`,
           x: 100,
           y: 100,
-          width: 800,
-          height: 600,
+          width: width ?? 800,
+          height: height ?? 600,
           color: "#ffffff",
           borderColor: "#e5e7eb",
           borderWidth: 1,

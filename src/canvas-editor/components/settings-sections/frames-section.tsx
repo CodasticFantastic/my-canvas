@@ -10,16 +10,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/shadcn/ui/alert-dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/ui/popover";
 import { useCanvasStore } from "../../store/canvas-editor.store";
 import { cn } from "@/lib/shadcn/utils";
 import { SettingsSection } from "./settings-sections.boillerplate";
-import { CopyIcon, Trash2Icon } from "lucide-react";
+import { CopyIcon, Trash2Icon, ChevronRightIcon } from "lucide-react";
 import { Frame } from "@/canvas-editor/canvas-editor.types";
+import { POPULAR_FRAME_SIZES } from "@/canvas-editor/canvas-editor.config";
 
 export const FramesSection = () => {
   const { activePage, activeFrame, addFrameToActivePage, setActiveFrame, duplicateFrame, deleteFrame } =
     useCanvasStore();
   const [frameToDelete, setFrameToDelete] = useState<Frame | null>(null);
+  const [popoverOpen, setPopoverOpen] = useState(false);
 
   const handleDuplicateFrame = (e: React.MouseEvent, frameId: string) => {
     e.stopPropagation();
@@ -38,13 +41,56 @@ export const FramesSection = () => {
     }
   };
 
+  const handleAddFrameWithSize = (width: number, height: number, name: string) => {
+    addFrameToActivePage(width, height, name);
+    setPopoverOpen(false);
+  };
+
   return (
     <SettingsSection
       title="Frames"
       action={
-        <Button size="xs" variant="ghost" onClick={addFrameToActivePage}>
-          + Frame
-        </Button>
+        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button size="xs" variant="ghost">
+              + Frame
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent side="right" align="center" className="w-64 p-2">
+            <div className="flex flex-col gap-1">
+              <div className="text-muted-foreground px-2 py-1.5 text-xs font-semibold">Popular sizes</div>
+              {POPULAR_FRAME_SIZES.map((size) => (
+                <button
+                  key={`${size.width}-${size.height}`}
+                  onClick={() => handleAddFrameWithSize(size.width, size.height, size.name)}
+                  className="hover:bg-accent hover:text-accent-foreground flex items-center justify-between rounded px-2 py-1.5 text-left text-xs transition-colors"
+                >
+                  <div className="flex flex-col">
+                    <span className="font-medium">{size.name}</span>
+                    <span className="text-muted-foreground text-[10px]">
+                      {size.width} × {size.height}
+                    </span>
+                  </div>
+                  <ChevronRightIcon className="text-muted-foreground size-3" />
+                </button>
+              ))}
+              <div className="my-1 border-t" />
+              <button
+                onClick={() => {
+                  addFrameToActivePage();
+                  setPopoverOpen(false);
+                }}
+                className="hover:bg-accent hover:text-accent-foreground flex items-center justify-between rounded px-2 py-1.5 text-left text-xs transition-colors"
+              >
+                <div className="flex flex-col">
+                  <span className="font-medium">Custom size</span>
+                  <span className="text-muted-foreground text-[10px]">800 × 600 (default)</span>
+                </div>
+                <ChevronRightIcon className="text-muted-foreground size-3" />
+              </button>
+            </div>
+          </PopoverContent>
+        </Popover>
       }
     >
       <div className="bg-muted/40 flex flex-col gap-1 rounded-md p-1">
