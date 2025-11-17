@@ -11,9 +11,6 @@ export type RootSlice = {
   setCanvasSize: (w: number, h: number) => void;
   setPan: (x: number, y: number) => void;
   setZoom: (nextZoom: number, anchor?: CanvasPoint) => void;
-  resetView: () => void;
-  toWorld: (p: CanvasPoint) => CanvasPoint;
-  toScreen: (p: CanvasPoint) => CanvasPoint;
 };
 
 export const createRootSlice: SliceFactory<RootSlice> = (set, get) => ({
@@ -41,17 +38,5 @@ export const createRootSlice: SliceFactory<RootSlice> = (set, get) => ({
     const nx = anchor.x - worldX * clamped;
     const ny = anchor.y - worldY * clamped;
     set({ zoom: clamped, panOffsetX: nx, panOffsetY: ny });
-  },
-
-  resetView: () => set({ panOffsetX: 0, panOffsetY: 0, zoom: 1 }),
-
-  toWorld: (p) => {
-    const { panOffsetX: x, panOffsetY: y, zoom } = get();
-    return { x: (p.x - x) / zoom, y: (p.y - y) / zoom };
-  },
-
-  toScreen: (p) => {
-    const { panOffsetX: x, panOffsetY: y, zoom } = get();
-    return { x: p.x * zoom + x, y: p.y * zoom + y };
   },
 });

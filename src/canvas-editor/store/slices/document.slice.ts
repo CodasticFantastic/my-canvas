@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid";
 import { CanvasPoint, SliceFactory } from "@/canvas-editor/canvas-editor.types";
+import { toast } from "sonner";
 
 export type CanvasElementType = "rect";
 
@@ -32,8 +33,8 @@ export type Page = {
 
 export type DocumentSlice = {
   pages: Page[];
-  activePageId: string | null;
-  activeFrameId: string | null;
+  activeFrame: Frame | null;
+  activePage: Page | null;
   addPage: () => void;
   setActivePage: (pageId: string) => void;
   addFrameToActivePage: () => void;
@@ -45,8 +46,8 @@ export type DocumentSlice = {
 export const createDocumentSlice: SliceFactory<DocumentSlice> = (set, get) => {
   return {
     pages: [],
-    activePageId: null,
-    activeFrameId: null,
+    activePage: null,
+    activeFrame: null,
 
     addPage: () => {
       set((state) => {
@@ -62,8 +63,8 @@ export const createDocumentSlice: SliceFactory<DocumentSlice> = (set, get) => {
 
         return {
           pages: [...pages, newPage],
-          activePageId: pageId,
-          activeFrameId: null,
+          activePage: newPage,
+          activeFrame: null,
         };
       });
     },
@@ -72,18 +73,22 @@ export const createDocumentSlice: SliceFactory<DocumentSlice> = (set, get) => {
       const { pages } = get();
       const page = pages.find((p) => p.id === pageId) ?? null;
       set({
-        activePageId: pageId,
-        activeFrameId: page?.frames[0]?.id ?? null,
+        activePage: page,
+        activeFrame: page?.frames[0] ?? null,
       });
     },
 
     addFrameToActivePage: () => {
-      const { activePageId } = get();
-      if (!activePageId) return;
+      const { activePage } = get();
+      if (!activePage) {
+        toast.error("Lack of active page. Add a page first.");
+
+        return;
+      }
 
       set((state) => {
         const { pages: currentPages } = state;
-        const pageIndex = currentPages.findIndex((p) => p.id === activePageId);
+        const pageIndex = currentPages.findIndex((p) => p.id === activePage.id);
         if (pageIndex === -1) return {};
 
         const page = currentPages[pageIndex];
@@ -101,20 +106,26 @@ export const createDocumentSlice: SliceFactory<DocumentSlice> = (set, get) => {
         };
 
         const nextPages = [...currentPages];
-        nextPages[pageIndex] = {
+        const updatedPage = {
           ...page,
           frames: [...page.frames, newFrame],
         };
+        nextPages[pageIndex] = updatedPage;
 
         return {
           pages: nextPages,
-          activeFrameId: frameId,
+          activePage: updatedPage,
+          activeFrame: newFrame,
         };
       });
     },
 
     setActiveFrame: (frameId) => {
-      set({ activeFrameId: frameId });
+      const { activePage } = get();
+      if (!activePage) return;
+
+      const frame = activePage.frames.find((f) => f.id === frameId) ?? null;
+      set({ activeFrame: frame });
     },
 
     moveFrame: (frameId, position) => {
