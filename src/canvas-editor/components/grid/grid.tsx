@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { FastLayer, Shape } from "react-konva";
+import { Layer, Shape } from "react-konva";
 import { useCanvasStore } from "../../store/canvas-editor.store";
 import Color from "color";
 
@@ -24,7 +24,7 @@ export const Grid = () => {
   if (!showGrid) return null;
 
   return (
-    <FastLayer listening={false} perfectDrawEnabled={false}>
+    <Layer listening={false} perfectDrawEnabled={false}>
       <Shape
         listening={false}
         perfectDrawEnabled={false}
@@ -51,6 +51,6 @@ export const Grid = () => {
           ctx.restore();
         }}
       />
-    </FastLayer>
+    </Layer>
   );
 };

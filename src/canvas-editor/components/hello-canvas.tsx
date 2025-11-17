@@ -27,12 +27,12 @@ export const HelloCanvas = () => {
           <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
             {!activePage && (
               <Button size="sm" onClick={() => addPage()}>
-                1. Create a page
+                Create a page
               </Button>
             )}
             {activePage && !activeFrame && (
               <Button size="sm" onClick={() => addFrameToActivePage()}>
-                2. Add a frame
+                Add a frame
               </Button>
             )}
             <Button

@@ -81,13 +81,12 @@ export function useCanvasPan(stageRef: StageRef) {
       if (!stage) return;
 
       // If the target is the stage, stop dragging if panning is not active
-      // if (e.target === stage) {
-      //   if (!isPanning) {
-      //     // Nie pozwalaj przeciągać sceny, jeśli panning nie jest aktywny
-      //     e.target.stopDrag();
-      //   }
-      //   return;
-      // }
+      if (e.target === stage) {
+        if (!isPanning) {
+          e.target.stopDrag();
+        }
+        return;
+      }
     },
     [isPanning, stageRef]
   );
@@ -97,7 +96,7 @@ export function useCanvasPan(stageRef: StageRef) {
       const stage = stageRef.current;
       if (!stage) return;
 
-      // Aktualizujemy pan tylko jeśli zakończył się drag samej sceny
+      // Update pan only if the drag ended on the stage
       if (e.target === stage) {
         setPan(stage.x(), stage.y());
       }

@@ -35,7 +35,7 @@ export const ColorSwitcher: React.FC<ColorSwitcherProps> = ({ currentColor, onCh
         </div>
       </PopoverTrigger>
       <PopoverContent className="mt-3 w-72">
-        <ColorPicker defaultValue={Color(currentColor).rgb().string()} onChange={onChange}>
+        <ColorPicker value={Color(currentColor).rgb().string()} onChange={(color) => onChange(color)}>
           <ColorPickerSelection className="h-64 w-full" />
           <div className="flex items-center gap-4">
             <ColorPickerEyeDropper />

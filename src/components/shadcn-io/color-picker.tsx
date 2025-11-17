@@ -46,29 +46,96 @@ export type ColorPickerProps = HTMLAttributes<HTMLDivElement> & {
 export const ColorPicker = ({ value, defaultValue = "#000000", onChange, className, ...props }: ColorPickerProps) => {
   // initialize from controlled value if present, otherwise from defaultValue
   const initialColor = Color(value ?? defaultValue);
-  const [hue, setHue] = useState(initialColor.hue() || 0);
-  const [saturation, setSaturation] = useState(initialColor.saturationl() || 100);
-  const [lightness, setLightness] = useState(initialColor.lightness() || 50);
+  const [h, s, l] = initialColor.hsl().array();
+  const [hue, setHue] = useState(isNaN(h) ? 0 : h);
+  const [saturation, setSaturation] = useState(isNaN(s) ? 0 : Math.max(0, Math.min(100, s)));
+  const [lightness, setLightness] = useState(isNaN(l) ? 0 : Math.max(0, Math.min(100, l)));
   const [alpha, setAlpha] = useState(initialColor.alpha() * 100);
   const [mode, setMode] = useState("hex");
-  // Update color when controlled value changes
+  const isInitialMount = useRef(true);
+  const onChangeRef = useRef(onChange);
+  const previousValueRef = useRef(value);
+  const isInternalUpdateRef = useRef(false);
+  const lastOnChangeColorRef = useRef<string | null>(null);
+
+  // Keep onChange ref up to date
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  // Update color when controlled value changes (only if value actually changed externally)
   useEffect(() => {
     if (value == null) return;
-    const c = Color(value);
-    const [h, s, l] = c.hsl().array();
-    setHue(h || 0);
-    setSaturation(s || 100);
-    setLightness(l || 50);
-    setAlpha(c.alpha() * 100);
+    // Skip if this is an internal update (to prevent loops)
+    if (isInternalUpdateRef.current) {
+      isInternalUpdateRef.current = false;
+      return;
+    }
+
+    // Compare colors instead of string values (handles different formats)
+    const newColor = Color(value);
+    const prevColor = previousValueRef.current != null ? Color(previousValueRef.current) : null;
+
+    // Skip if colors are the same (with tolerance for floating point precision)
+    if (prevColor) {
+      if (
+        Math.abs(newColor.red() - prevColor.red()) < 1 &&
+        Math.abs(newColor.green() - prevColor.green()) < 1 &&
+        Math.abs(newColor.blue() - prevColor.blue()) < 1 &&
+        Math.abs(newColor.alpha() - prevColor.alpha()) < 0.01
+      ) {
+        return;
+      }
+    }
+
+    const [h, s, l] = newColor.hsl().array();
+    // Handle achromatic colors (white, black, gray) where hue might be NaN
+    setHue(isNaN(h) ? 0 : h);
+    setSaturation(isNaN(s) ? 0 : Math.max(0, Math.min(100, s)));
+    setLightness(isNaN(l) ? 0 : Math.max(0, Math.min(100, l)));
+    setAlpha(newColor.alpha() * 100);
+    previousValueRef.current = value;
+    // Reset last onChange color when value changes externally
+    lastOnChangeColorRef.current = null;
   }, [value]);
+
   // Notify parent of changes
   useEffect(() => {
-    if (onChange) {
+    if (onChangeRef.current) {
+      // Skip onChange on initial mount
+      if (isInitialMount.current) {
+        isInitialMount.current = false;
+        return;
+      }
+      // Skip onChange if value is controlled and matches current color
+      if (value != null) {
+        const currentColor = Color.hsl(hue, saturation, lightness).alpha(alpha / 100);
+        const valueColor = Color(value);
+        // Compare colors (with small tolerance for floating point precision)
+        if (
+          Math.abs(currentColor.red() - valueColor.red()) < 1 &&
+          Math.abs(currentColor.green() - valueColor.green()) < 1 &&
+          Math.abs(currentColor.blue() - valueColor.blue()) < 1 &&
+          Math.abs(currentColor.alpha() - valueColor.alpha()) < 0.01
+        ) {
+          return;
+        }
+      }
       const color = Color.hsl(hue, saturation, lightness).alpha(alpha / 100);
       const rgba = color.rgb().array();
-      onChange([rgba[0], rgba[1], rgba[2], alpha / 100]);
+      const colorString = color.rgb().string();
+
+      // Skip if we just called onChange with the same color
+      if (lastOnChangeColorRef.current === colorString) {
+        return;
+      }
+
+      // Mark as internal update to prevent feedback loop
+      isInternalUpdateRef.current = true;
+      lastOnChangeColorRef.current = colorString;
+      onChangeRef.current([rgba[0], rgba[1], rgba[2], alpha / 100]);
     }
-  }, [hue, saturation, lightness, alpha, onChange]);
+  }, [hue, saturation, lightness, alpha, value]);
   return (
     <ColorPickerContext.Provider
       value={{
@@ -92,20 +159,26 @@ export type ColorPickerSelectionProps = HTMLAttributes<HTMLDivElement>;
 export const ColorPickerSelection = memo(({ className, ...props }: ColorPickerSelectionProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
   const { hue, saturation, lightness, setSaturation, setLightness } = useColorPicker();
-  // initialize pin position from current saturation/lightness (default color)
-  const [positionX, setPositionX] = useState(() => {
-    const sat = Math.max(0, Math.min(100, saturation));
-    return sat / 100;
-  });
-  const [positionY, setPositionY] = useState(() => {
+
+  // Calculate pin position from saturation/lightness
+  const position = useMemo(() => {
+    // Use drag position if dragging, otherwise calculate from saturation/lightness
+    if (isDragging && dragPosition) {
+      return dragPosition;
+    }
     const sat = Math.max(0, Math.min(100, saturation));
     const light = Math.max(0, Math.min(100, lightness));
     const x = sat / 100;
     const topLightness = x < 0.01 ? 100 : 50 + 50 * (1 - x);
     const y = 1 - light / topLightness;
-    return Math.max(0, Math.min(1, y));
-  });
+    return {
+      x,
+      y: Math.max(0, Math.min(1, y)),
+    };
+  }, [saturation, lightness, isDragging, dragPosition]);
+
   const backgroundGradient = useMemo(() => {
     return `linear-gradient(0deg, rgba(0,0,0,1), rgba(0,0,0,0)),
             linear-gradient(90deg, rgba(255,255,255,1), rgba(255,255,255,0)),
@@ -119,8 +192,7 @@ export const ColorPickerSelection = memo(({ className, ...props }: ColorPickerSe
       const rect = containerRef.current.getBoundingClientRect();
       const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
       const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
-      setPositionX(x);
-      setPositionY(y);
+      setDragPosition({ x, y });
       setSaturation(x * 100);
       const topLightness = x < 0.01 ? 100 : 50 + 50 * (1 - x);
       const lightness = topLightness * (1 - y);
@@ -129,7 +201,10 @@ export const ColorPickerSelection = memo(({ className, ...props }: ColorPickerSe
     [isDragging, setSaturation, setLightness]
   );
   useEffect(() => {
-    const handlePointerUp = () => setIsDragging(false);
+    const handlePointerUp = () => {
+      setIsDragging(false);
+      setDragPosition(null);
+    };
     if (isDragging) {
       window.addEventListener("pointermove", handlePointerMove);
       window.addEventListener("pointerup", handlePointerUp);
@@ -156,8 +231,8 @@ export const ColorPickerSelection = memo(({ className, ...props }: ColorPickerSe
       <div
         className="pointer-events-none absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white"
         style={{
-          left: `${positionX * 100}%`,
-          top: `${positionY * 100}%`,
+          left: `${position.x * 100}%`,
+          top: `${position.y * 100}%`,
           boxShadow: "0 0 0 1px rgba(0,0,0,0.5)",
         }}
       />
