@@ -2,6 +2,9 @@ import { useCallback } from "react";
 import { useCanvasStore } from "../store/canvas-editor.store";
 import { toast } from "sonner";
 
+/**
+ * Hook to import and export canvas project.
+ */
 export function useCanvasImportExport() {
   const { pages } = useCanvasStore();
 

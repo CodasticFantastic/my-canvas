@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type Konva from "konva";
 import { useCanvasStore } from "../store/canvas-editor.store";
+import { StageRef } from "../canvas-editor.types";
 
-type StageRef = React.RefObject<Konva.Stage | null>;
+/**
+ * Hook to handle canvas panning.
+ */
 
 export function useCanvasPan(stageRef: StageRef) {
   const { setPan } = useCanvasStore();

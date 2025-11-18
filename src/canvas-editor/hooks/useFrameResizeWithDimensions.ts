@@ -1,20 +1,16 @@
 import { useCallback } from "react";
 import type Konva from "konva";
-import type { Frame } from "../canvas-editor.types";
+import type { Frame, SideIndicator } from "../canvas-editor.types";
 import type { Dimensions } from "./useLiveDimensions";
 
 export function useFrameResizeWithDimensions(
   activeFrameData: Frame | null,
   setLiveFrameDimensions: (dimensions: Dimensions) => void,
   throttledSetStoreLiveFrameDimensions: (dimensions: Dimensions) => void,
-  handleResizeMove: (
-    e: Konva.KonvaEventObject<DragEvent>,
-    frame: Frame,
-    handle: "right" | "bottom" | "left" | "top"
-  ) => void
+  handleResizeMove: (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, handle: SideIndicator) => void
 ) {
   const handleResizeMoveWithDimensions = useCallback(
-    (e: Konva.KonvaEventObject<DragEvent>, frame: Frame | null, handle: "right" | "bottom" | "left" | "top") => {
+    (e: Konva.KonvaEventObject<DragEvent>, frame: Frame | null, handle: SideIndicator) => {
       if (!frame) return;
       handleResizeMove(e, frame, handle);
 

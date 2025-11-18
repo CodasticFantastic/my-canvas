@@ -23,6 +23,7 @@ import { useElementInteractions } from "../hooks/useElementInteractions";
 import { useFrameResizeWithDimensions } from "../hooks/useFrameResizeWithDimensions";
 import { useActiveData } from "../hooks/useActiveData";
 import { useCanvasSize } from "../hooks/useCanvasSize";
+import { CanvasToolbar } from "../components/canvas-toolbar";
 
 export const Canvas = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -123,6 +124,10 @@ export const Canvas = () => {
       </div>
       <div className="absolute right-2 bottom-2 z-10">
         <HowToUseCanvasButton />
+      </div>
+
+      <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2">
+        <CanvasToolbar />
       </div>
 
       <Stage

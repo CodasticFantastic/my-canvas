@@ -1,9 +1,13 @@
 import { useCallback } from "react";
 import type Konva from "konva";
 import { useCanvasStore } from "../store/canvas-editor.store";
-import { CanvasPoint } from "../canvas-editor.types";
+import { CanvasPoint, StageRef } from "../canvas-editor.types";
 
-export function useCanvasZoom(stageRef: React.RefObject<Konva.Stage | null>) {
+/**
+ * Hook to handle canvas zooming.
+ */
+
+export function useCanvasZoom(stageRef: StageRef) {
   const { zoom, setZoom } = useCanvasStore();
   const scaleBy = 1.06;
 

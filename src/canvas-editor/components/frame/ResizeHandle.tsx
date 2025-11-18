@@ -1,15 +1,15 @@
 import { Rect } from "react-konva";
 import type Konva from "konva";
-import { Frame } from "../../canvas-editor.types";
+import { Frame, SideIndicator } from "../../canvas-editor.types";
 
 type ResizeHandleProps = {
   frame: Frame;
-  handle: "right" | "bottom" | "left" | "top";
+  handle: SideIndicator;
   zoom: number;
-  onResizeStart: (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, handle: "right" | "bottom" | "left" | "top") => void;
-  onResizeMove: (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, handle: "right" | "bottom" | "left" | "top") => void;
-  onResizeEnd: (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, handle: "right" | "bottom" | "left" | "top") => void;
-  onMouseEnter: (e: Konva.KonvaEventObject<MouseEvent>, handle: "right" | "bottom" | "left" | "top") => void;
+  onResizeStart: (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, handle: SideIndicator) => void;
+  onResizeMove: (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, handle: SideIndicator) => void;
+  onResizeEnd: (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, handle: SideIndicator) => void;
+  onMouseEnter: (e: Konva.KonvaEventObject<MouseEvent>, handle: SideIndicator) => void;
   onMouseLeave: (e: Konva.KonvaEventObject<MouseEvent>) => void;
 };
 
@@ -78,4 +78,3 @@ export function ResizeHandle({
     />
   );
 }
-

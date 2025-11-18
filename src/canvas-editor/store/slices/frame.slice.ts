@@ -18,6 +18,7 @@ export type FrameSlice = {
   updateFrameBorderColor: (frameId: string, color: ColorLike) => void;
   updateFrameBorderWidth: (frameId: string, width: number) => void;
   updateFrameBorderRadius: (frameId: string, radius: number) => void;
+  toggleFrameLock: (frameId: string) => void;
   duplicateFrame: (frameId: string) => void;
   deleteFrame: (frameId: string) => void;
 };
@@ -59,6 +60,7 @@ export const createFrameSlice: SliceFactory<FrameSlice> = (set, get) => {
           borderWidth: 1,
           borderRadius: 8,
           elements: [],
+          locked: false,
         };
 
         const nextPages = [...currentPages];
@@ -135,6 +137,10 @@ export const createFrameSlice: SliceFactory<FrameSlice> = (set, get) => {
 
     updateFrameBorderRadius: (frameId, radius) => {
       set((state) => updateSingleFrame(frameId, (frame) => ({ ...frame, borderRadius: radius }))(state));
+    },
+
+    toggleFrameLock: (frameId) => {
+      set((state) => updateSingleFrame(frameId, (frame) => ({ ...frame, locked: !frame.locked }))(state));
     },
 
     duplicateFrame: (frameId) => {

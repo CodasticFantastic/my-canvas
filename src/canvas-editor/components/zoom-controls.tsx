@@ -1,9 +1,9 @@
 import { Button } from "@/components/shadcn/ui/button";
 import { useCanvasZoom } from "../hooks/useCanvasZoom";
-import Konva from "konva";
 import { useCanvasStore } from "../store/canvas-editor.store";
+import { StageRef } from "../canvas-editor.types";
 
-export const ZoomControls = ({ stageRef }: { stageRef: React.RefObject<Konva.Stage | null> }) => {
+export const ZoomControls = ({ stageRef }: { stageRef: StageRef }) => {
   const { onButtonZoom } = useCanvasZoom(stageRef);
   const { zoom } = useCanvasStore();
 

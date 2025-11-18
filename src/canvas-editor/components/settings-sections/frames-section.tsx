@@ -14,13 +14,20 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/ui/
 import { useCanvasStore } from "../../store/canvas-editor.store";
 import { cn } from "@/lib/shadcn/utils";
 import { SettingsSection } from "./settings-sections.boillerplate";
-import { CopyIcon, Trash2Icon, ChevronRightIcon } from "lucide-react";
+import { CopyIcon, Trash2Icon, ChevronRightIcon, LockIcon, UnlockIcon } from "lucide-react";
 import { Frame } from "@/canvas-editor/canvas-editor.types";
 import { POPULAR_FRAME_SIZES } from "@/canvas-editor/canvas-editor.config";
 
 export const FramesSection = () => {
-  const { activePage, activeFrame, addFrameToActivePage, setActiveFrame, duplicateFrame, deleteFrame } =
-    useCanvasStore();
+  const {
+    activePage,
+    activeFrame,
+    addFrameToActivePage,
+    setActiveFrame,
+    duplicateFrame,
+    deleteFrame,
+    toggleFrameLock,
+  } = useCanvasStore();
   const [frameToDelete, setFrameToDelete] = useState<Frame | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
 
@@ -39,6 +46,11 @@ export const FramesSection = () => {
       deleteFrame(frameToDelete.id);
       setFrameToDelete(null);
     }
+  };
+
+  const handleToggleLock = (e: React.MouseEvent, frameId: string) => {
+    e.stopPropagation();
+    toggleFrameLock(frameId);
   };
 
   const handleAddFrameWithSize = (width: number, height: number, name: string) => {
@@ -120,6 +132,15 @@ export const FramesSection = () => {
                     aria-label="Duplicate frame"
                   >
                     <CopyIcon className="size-3" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-5 w-5 opacity-50 transition-opacity group-hover:opacity-100"
+                    onClick={(e) => handleToggleLock(e, frame.id)}
+                    aria-label={frame.locked ? "Unlock frame" : "Lock frame"}
+                  >
+                    {frame.locked ? <LockIcon className="size-3" /> : <UnlockIcon className="size-3" />}
                   </Button>
                   <Button
                     size="icon"

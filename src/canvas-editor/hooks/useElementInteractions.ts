@@ -3,9 +3,6 @@ import { useCanvasStore } from "../store/canvas-editor.store";
 import type { Dimensions } from "./useLiveDimensions";
 import { Page } from "../canvas-editor.types";
 
-/**
- * Hook do obsługi interakcji z elementami (click, drag start/move/end).
- */
 export function useElementInteractions(
   activePage: Page | null,
   setLiveElementDimensions: (dimensions: Dimensions | null) => void
@@ -33,12 +30,13 @@ export function useElementInteractions(
     (frameId: string, elementId: string) => {
       activateElementAndFrame(frameId, elementId);
 
-      // Ustaw początkowe wymiary - znajdź element w store
+      // Set initial dimensions - find element in store
       if (activePage) {
         const frame = activePage.frames.find((f) => f.id === frameId);
         if (frame) {
           const element = frame.elements.find((el) => el.id === elementId);
           if (element) {
+            // Live dimensions should always use bounding box position (top-left)
             setLiveElementDimensions({
               x: frame.x + element.x,
               y: frame.y + element.y,
@@ -62,7 +60,7 @@ export function useElementInteractions(
       const element = frame.elements.find((el) => el.id === elementId);
       if (!element) return;
 
-      // Aktualizuj liveElementDimensions - to spowoduje re-render etykiety
+      // Position is already adjusted in Frame component to be top-left corner
       setLiveElementDimensions({
         x: frame.x + position.x,
         y: frame.y + position.y,

@@ -1,9 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import type Konva from "konva";
 import { useCanvasStore } from "../store/canvas-editor.store";
-import { Frame } from "../canvas-editor.types";
-
-type ResizeHandle = "right" | "bottom" | "left" | "top";
+import { Frame, SideIndicator } from "../canvas-editor.types";
 
 type ResizeStartState = {
   width: number;
@@ -17,12 +15,12 @@ type ResizeStartState = {
 
 export function useFrameResize() {
   const { zoom, panOffsetX, panOffsetY, updateFrameSize, moveFrame, setActiveFrame } = useCanvasStore();
-  const [resizeHandle, setResizeHandle] = useState<ResizeHandle | null>(null);
+  const [resizeHandle, setResizeHandle] = useState<SideIndicator | null>(null);
   const [isResizing, setIsResizing] = useState(false);
   const resizeStartRef = useRef<ResizeStartState | null>(null);
 
   const handleResizeStart = useCallback(
-    (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, handle: ResizeHandle) => {
+    (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, handle: SideIndicator) => {
       e.cancelBubble = true;
       setIsResizing(true);
       setResizeHandle(handle);
@@ -41,7 +39,7 @@ export function useFrameResize() {
   );
 
   const handleResizeMove = useCallback(
-    (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, handle: ResizeHandle) => {
+    (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, handle: SideIndicator) => {
       e.cancelBubble = true;
       if (!resizeStartRef.current || resizeStartRef.current.frameId !== frame.id) return;
 
@@ -116,7 +114,7 @@ export function useFrameResize() {
   );
 
   const handleResizeEnd = useCallback(
-    (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, handle: ResizeHandle) => {
+    (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, handle: SideIndicator) => {
       e.cancelBubble = true;
       if (!resizeStartRef.current || resizeStartRef.current.frameId !== frame.id) return;
 
@@ -174,7 +172,7 @@ export function useFrameResize() {
   );
 
   const handleResizeMouseEnter = useCallback(
-    (e: Konva.KonvaEventObject<MouseEvent>, handle: ResizeHandle) => {
+    (e: Konva.KonvaEventObject<MouseEvent>, handle: SideIndicator) => {
       if (isResizing) return;
       const stage = e.target.getStage();
       if (stage) {

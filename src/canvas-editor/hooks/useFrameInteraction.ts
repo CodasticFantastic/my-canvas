@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import type Konva from "konva";
 import { useCanvasStore } from "../store/canvas-editor.store";
-import type { Frame } from "../canvas-editor.types";
+import type { Frame, SideIndicator, StageRef } from "../canvas-editor.types";
 import type { Dimensions } from "./useLiveDimensions";
 
 type UseFrameInteractionOptions = {
@@ -9,6 +9,10 @@ type UseFrameInteractionOptions = {
   setLiveFrameDimensions?: (dimensions: Dimensions) => void;
   throttledSetStoreLiveFrameDimensions?: (dimensions: Dimensions) => void;
 };
+
+/**
+ * Hook to handle frame interactions (click, hover, drag + live dimensions).
+ */
 
 export function useFrameInteraction(options?: UseFrameInteractionOptions) {
   const { setActiveFrame, moveFrame, activeFrame } = useCanvasStore();
@@ -36,7 +40,7 @@ export function useFrameInteraction(options?: UseFrameInteractionOptions) {
   }, []);
 
   const handleFrameMouseLeave = useCallback(
-    (isResizing: boolean, resizeHandle: string | null, stageRef: React.RefObject<Konva.Stage | null>) => {
+    (isResizing: boolean, resizeHandle: SideIndicator | null, stageRef: StageRef) => {
       if (!isResizing) {
         setHoveredFrameId(null);
         if (!resizeHandle) {
@@ -52,7 +56,14 @@ export function useFrameInteraction(options?: UseFrameInteractionOptions) {
 
   const handleFrameDragStart = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, isResizing: boolean) => {
-      if (isResizing) {
+      // Only stop drag if the event target is the frame Group itself, not its children
+      // This allows elements inside the frame to be draggable even when frame is locked
+      if (e.target !== e.currentTarget) {
+        // Event is from a child element, let it handle its own drag
+        return;
+      }
+
+      if (isResizing || frame.locked) {
         e.target.stopDrag();
         return;
       }
@@ -65,6 +76,7 @@ export function useFrameInteraction(options?: UseFrameInteractionOptions) {
     (frameId: string, position: { x: number; y: number }) => {
       if (!activeFrameData || !setLiveFrameDimensions || !throttledSetStoreLiveFrameDimensions) return;
       if (activeFrameData.id !== frameId) return;
+      if (activeFrameData.locked) return;
 
       const next: Dimensions = {
         x: position.x,
@@ -80,7 +92,7 @@ export function useFrameInteraction(options?: UseFrameInteractionOptions) {
 
   const handleFrameDragEnd = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>, frame: Frame, isResizing: boolean) => {
-      if (e.target !== e.currentTarget || isResizing) return;
+      if (e.target !== e.currentTarget || isResizing || frame.locked) return;
       const node = e.currentTarget as Konva.Group;
       moveFrame(frame.id, { x: node.x(), y: node.y() });
       setActiveFrame(frame.id);
