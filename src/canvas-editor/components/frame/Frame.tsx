@@ -12,7 +12,7 @@ type FrameProps = {
   isResizing: boolean;
   resizeHandle: SideIndicator | null;
   stageRef: StageRef;
-  onFrameClick: (frameId: string, isResizing: boolean) => void;
+  onFrameClick: (e: Konva.KonvaEventObject<MouseEvent>, frameId: string, isResizing: boolean) => void;
   onFrameMouseEnter: (frameId: string, isResizing: boolean) => void;
   onFrameMouseLeave: (isResizing: boolean, resizeHandle: SideIndicator | null) => void;
   onFrameDragStart: (e: Konva.KonvaEventObject<DragEvent>, frame: FrameType, isResizing: boolean) => void;
@@ -63,7 +63,13 @@ export function Frame({
       x={frame.x}
       y={frame.y}
       draggable={!isResizing && !frame.locked}
-      onClick={() => onFrameClick(frame.id, isResizing)}
+      onClick={(e) => {
+        // Only handle click if it's the Group itself (frame rect), not child elements
+        // This allows clicking on frame to deselect elements
+        if (e.target === e.currentTarget || e.target.name() === "frame-rect") {
+          onFrameClick(e, frame.id, isResizing);
+        }
+      }}
       onMouseEnter={() => onFrameMouseEnter(frame.id, isResizing)}
       onMouseLeave={() => onFrameMouseLeave(isResizing, resizeHandle)}
       onDragStart={(e) => {
@@ -157,7 +163,7 @@ export function Frame({
           onDragStart: () => {
             onElementDragStart(frame.id, el.id);
           },
-          onDrag: (e: Konva.KonvaEventObject<DragEvent>) => {
+          onDragMove: (e: Konva.KonvaEventObject<DragEvent>) => {
             const node = e.target;
             let x = node.x();
             let y = node.y();

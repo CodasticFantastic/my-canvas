@@ -7,9 +7,11 @@ import { Frame, Page } from "@/canvas-editor/canvas-editor.types";
 export type FrameSlice = {
   activeFrame: Frame | null;
   liveFrameDimensions: { x: number; y: number; width: number; height: number } | null;
+  isFrameInMove: boolean;
   setLiveFrameDimensions: (dimensions: { x: number; y: number; width: number; height: number } | null) => void;
+  setIsFrameInMove: (value: boolean) => void;
   addFrameToActivePage: (width?: number, height?: number, name?: string) => void;
-  setActiveFrame: (frameId: string | null) => void;
+  setActiveFrame: (frameId: string | null, clearActiveElement?: boolean) => void;
   moveFrame: (frameId: string, position: CanvasPoint) => void;
   updateFrameName: (frameId: string, name: string) => void;
   updateFramePosition: (frameId: string, x: number, y: number) => void;
@@ -27,9 +29,14 @@ export const createFrameSlice: SliceFactory<FrameSlice> = (set, get) => {
   return {
     activeFrame: null,
     liveFrameDimensions: null,
+    isFrameInMove: false,
 
     setLiveFrameDimensions: (dimensions) => {
       set({ liveFrameDimensions: dimensions });
+    },
+
+    setIsFrameInMove: (value) => {
+      set({ isFrameInMove: value });
     },
 
     addFrameToActivePage: (width?: number, height?: number, name?: string) => {
@@ -61,6 +68,7 @@ export const createFrameSlice: SliceFactory<FrameSlice> = (set, get) => {
           borderRadius: 8,
           elements: [],
           locked: false,
+          isInMove: false,
         };
 
         const nextPages = [...currentPages];
@@ -78,7 +86,7 @@ export const createFrameSlice: SliceFactory<FrameSlice> = (set, get) => {
       });
     },
 
-    setActiveFrame: (frameId) => {
+    setActiveFrame: (frameId, clearActiveElement = false) => {
       const { pages, activePage } = get();
       if (!activePage) return;
 
@@ -89,6 +97,7 @@ export const createFrameSlice: SliceFactory<FrameSlice> = (set, get) => {
       set({
         activeFrame: frame,
         activePage: updatedPage,
+        ...(clearActiveElement && { activeElement: null }),
       });
     },
 

@@ -12,7 +12,7 @@ import {
 } from "@/components/shadcn/ui/alert-dialog";
 import { useCanvasStore } from "../../store/canvas-editor.store";
 import { cn } from "@/lib/shadcn/utils";
-import { SettingsSection } from "./settings-sections.boillerplate";
+import { SettingsSection } from "./settings-sections.boilerplate";
 import { CopyIcon, Trash2Icon } from "lucide-react";
 import { Page } from "@/canvas-editor/canvas-editor.types";
 
@@ -56,9 +56,9 @@ export const PagesSection = () => {
               activePage?.id === page.id ? "bg-accent text-accent-foreground" : "hover:bg-muted/80 text-foreground"
             )}
           >
-            <span>{page.name}</span>
+            <span className="me-2 truncate">{page.name}</span>
             <div className="flex items-center gap-1">
-              <span className="text-muted-foreground text-[10px]">
+              <span className="text-muted-foreground text-[10px] whitespace-nowrap">
                 {page.frames.length} frame{page.frames.length === 1 ? "" : "s"}
               </span>
               <Button

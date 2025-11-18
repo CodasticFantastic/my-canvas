@@ -6,6 +6,7 @@ interface SettingsInputProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: (value: string) => void;
   placeholder?: string;
   labelIn?: boolean;
   unit?: string;
@@ -16,6 +17,7 @@ export const SettingsInput: React.FC<SettingsInputProps> = ({
   label,
   value,
   onChange,
+  onBlur,
   placeholder,
   labelIn = false,
   unit,
@@ -36,6 +38,7 @@ export const SettingsInput: React.FC<SettingsInputProps> = ({
               aria-label={label}
               placeholder={placeholder}
               onChange={(e) => onChange(e.target.value)}
+              onBlur={onBlur ? (e) => onBlur(e.target.value) : undefined}
               className="bg-muted! h-7 flex-1 border-none px-1 text-xs shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
               {...inputProps}
             />
@@ -63,6 +66,7 @@ export const SettingsInput: React.FC<SettingsInputProps> = ({
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur ? (e) => onBlur(e.target.value) : undefined}
         className="border-border/60 bg-background/70 focus-visible:ring-ring h-8 rounded-md text-xs shadow-sm focus-visible:ring-1"
       />
     </div>

@@ -17,15 +17,37 @@ export function useCanvasPan(stageRef: StageRef) {
   // Global listeners for Space key to toggle panning mode
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept Space if user is typing in an input, textarea, or contenteditable element
+      const target = e.target as HTMLElement;
+      const isInputElement =
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable ||
+        target.closest("input, textarea, [contenteditable]");
+
       if (e.code === "Space" && !spaceActiveRef.current) {
-        e.preventDefault();
-        spaceActiveRef.current = true;
-        setIsSpaceHeld(true);
+        // Only prevent default if not in an input element
+        if (!isInputElement) {
+          e.preventDefault();
+          spaceActiveRef.current = true;
+          setIsSpaceHeld(true);
+        }
       }
     };
     const onKeyUp = (e: KeyboardEvent) => {
+      // Don't intercept Space if user is typing in an input, textarea, or contenteditable element
+      const target = e.target as HTMLElement;
+      const isInputElement =
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable ||
+        target.closest("input, textarea, [contenteditable]");
+
       if (e.code === "Space") {
-        e.preventDefault();
+        // Only prevent default if not in an input element
+        if (!isInputElement) {
+          e.preventDefault();
+        }
         spaceActiveRef.current = false;
         setIsPanning(false);
         setIsSpaceHeld(false);

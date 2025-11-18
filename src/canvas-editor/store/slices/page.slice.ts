@@ -50,6 +50,7 @@ export const createPageSlice: SliceFactory<PageSlice> = (set, get) => {
           pages: [...pages, newPage],
           activePage: newPage,
           activeFrame: null,
+          activeElement: null,
         };
       });
     },
@@ -57,9 +58,11 @@ export const createPageSlice: SliceFactory<PageSlice> = (set, get) => {
     setActivePage: (pageId) => {
       const { pages } = get();
       const page = pages.find((p) => p.id === pageId) ?? null;
+
       set({
         activePage: page,
-        activeFrame: page?.frames[0] ?? null,
+        activeFrame: null,
+        activeElement: null,
       });
     },
 
@@ -95,6 +98,7 @@ export const createPageSlice: SliceFactory<PageSlice> = (set, get) => {
           pages: [...state.pages, duplicatedPage],
           activePage: duplicatedPage,
           activeFrame: duplicatedPage.frames[0] ?? null,
+          activeElement: null,
         };
       });
       toast.success("Page duplicated");
@@ -127,6 +131,7 @@ export const createPageSlice: SliceFactory<PageSlice> = (set, get) => {
           pages: nextPages,
           activePage: newActivePage,
           activeFrame: newActiveFrame,
+          activeElement: null,
         };
       });
       toast.success("Page deleted");

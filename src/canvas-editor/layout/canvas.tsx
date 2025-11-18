@@ -40,6 +40,7 @@ export const Canvas = () => {
   const zoom = useCanvasStore((state) => state.zoom);
   const activePage = useCanvasStore((state) => state.activePage);
   const setActiveElement = useCanvasStore((state) => state.setActiveElement);
+  const isFrameInMove = useCanvasStore((state) => state.isFrameInMove);
 
   // Live dimensions management
   const {
@@ -163,7 +164,7 @@ export const Canvas = () => {
                 isResizing={isResizing}
                 resizeHandle={resizeHandle}
                 stageRef={stageRef}
-                onFrameClick={handleFrameClick}
+                onFrameClick={(e, frameId, isResizing) => handleFrameClick(e, frameId, isResizing)}
                 onFrameMouseEnter={handleFrameMouseEnter}
                 onFrameMouseLeave={(isResizing, resizeHandle) =>
                   handleFrameMouseLeave(isResizing, resizeHandle, stageRef)
@@ -201,7 +202,7 @@ export const Canvas = () => {
               />
             ))}
             {/* Element dimensions label */}
-            {activeElementData && (
+            {activeElementData && !isFrameInMove && (
               <ElementDimensionsLabel
                 x={liveElementDimensions?.x ?? activeElementData.frame.x + activeElementData.element.x}
                 y={liveElementDimensions?.y ?? activeElementData.frame.y + activeElementData.element.y}

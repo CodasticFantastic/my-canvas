@@ -1,5 +1,5 @@
 import { useCanvasStore } from "../../store/canvas-editor.store";
-import { SettingsSection } from "./settings-sections.boillerplate";
+import { SettingsSection } from "./settings-sections.boilerplate";
 
 export const LayersSection = () => {
   const { activeFrame } = useCanvasStore();

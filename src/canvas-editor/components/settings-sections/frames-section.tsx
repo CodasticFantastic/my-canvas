@@ -13,7 +13,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/ui/popover";
 import { useCanvasStore } from "../../store/canvas-editor.store";
 import { cn } from "@/lib/shadcn/utils";
-import { SettingsSection } from "./settings-sections.boillerplate";
+import { SettingsSection } from "./settings-sections.boilerplate";
 import { CopyIcon, Trash2Icon, ChevronRightIcon, LockIcon, UnlockIcon } from "lucide-react";
 import { Frame } from "@/canvas-editor/canvas-editor.types";
 import { POPULAR_FRAME_SIZES } from "@/canvas-editor/canvas-editor.config";
@@ -111,7 +111,7 @@ export const FramesSection = () => {
             activePage.frames.map((frame) => (
               <div
                 key={frame.id}
-                onClick={() => setActiveFrame(frame.id)}
+                onClick={() => setActiveFrame(frame.id, true)}
                 className={cn(
                   "group flex w-full cursor-pointer items-center justify-between rounded px-2 py-1 text-left text-xs transition-colors",
                   activeFrame?.id === frame.id
@@ -119,9 +119,9 @@ export const FramesSection = () => {
                     : "hover:bg-muted/80 text-foreground"
                 )}
               >
-                <span>{frame.name}</span>
+                <span className="me-2 truncate">{frame.name}</span>
                 <div className="flex items-center gap-1">
-                  <span className="text-muted-foreground text-[10px]">
+                  <span className="text-muted-foreground text-[10px] whitespace-nowrap">
                     {frame.elements.length} layer{frame.elements.length === 1 ? "" : "s"}
                   </span>
                   <Button

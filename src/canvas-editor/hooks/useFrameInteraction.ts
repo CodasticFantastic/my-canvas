@@ -15,7 +15,7 @@ type UseFrameInteractionOptions = {
  */
 
 export function useFrameInteraction(options?: UseFrameInteractionOptions) {
-  const { setActiveFrame, moveFrame, activeFrame } = useCanvasStore();
+  const { setActiveFrame, moveFrame, activeFrame, setIsFrameInMove } = useCanvasStore();
   const [hoveredFrameId, setHoveredFrameId] = useState<string | null>(null);
 
   const { activeFrameData, setLiveFrameDimensions, throttledSetStoreLiveFrameDimensions } = options ?? {};
@@ -25,9 +25,11 @@ export function useFrameInteraction(options?: UseFrameInteractionOptions) {
   }, [setActiveFrame]);
 
   const handleFrameClick = useCallback(
-    (frameId: string, isResizing: boolean) => {
+    (e: Konva.KonvaEventObject<MouseEvent>, frameId: string, isResizing: boolean) => {
       if (!isResizing) {
         setActiveFrame(frameId);
+        const { setActiveElement } = useCanvasStore.getState();
+        setActiveElement(null, null);
       }
     },
     [setActiveFrame]
@@ -68,8 +70,9 @@ export function useFrameInteraction(options?: UseFrameInteractionOptions) {
         return;
       }
       setActiveFrame(frame.id);
+      setIsFrameInMove(true);
     },
-    [setActiveFrame]
+    [setActiveFrame, setIsFrameInMove]
   );
 
   const handleFrameDragMove = useCallback(
@@ -96,8 +99,9 @@ export function useFrameInteraction(options?: UseFrameInteractionOptions) {
       const node = e.currentTarget as Konva.Group;
       moveFrame(frame.id, { x: node.x(), y: node.y() });
       setActiveFrame(frame.id);
+      setIsFrameInMove(false);
     },
-    [moveFrame, setActiveFrame]
+    [moveFrame, setActiveFrame, setIsFrameInMove]
   );
 
   const isFrameHovered = useCallback(

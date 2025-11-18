@@ -10,6 +10,7 @@ export function useElementInteractions(
   const setActiveElement = useCanvasStore((state) => state.setActiveElement);
   const setActiveFrame = useCanvasStore((state) => state.setActiveFrame);
   const moveElement = useCanvasStore((state) => state.moveElement);
+  const setIsInMove = useCanvasStore((state) => state.setIsFrameInMove);
 
   const activateElementAndFrame = useCallback(
     (frameId: string, elementId: string) => {
@@ -29,6 +30,7 @@ export function useElementInteractions(
   const handleElementDragStart = useCallback(
     (frameId: string, elementId: string) => {
       activateElementAndFrame(frameId, elementId);
+      setIsInMove(true);
 
       // Set initial dimensions - find element in store
       if (activePage) {
@@ -47,20 +49,23 @@ export function useElementInteractions(
         }
       }
     },
-    [activePage, activateElementAndFrame, setLiveElementDimensions]
+    [activePage, activateElementAndFrame, setLiveElementDimensions, setIsInMove]
   );
 
   const handleElementDragMove = useCallback(
     (frameId: string, elementId: string, position: { x: number; y: number }) => {
-      if (!activePage) return;
+      // Get current state from store to ensure we have the latest frame position
+      const currentState = useCanvasStore.getState();
+      const currentPage = currentState.activePage;
 
-      const frame = activePage.frames.find((f) => f.id === frameId);
+      if (!currentPage) return;
+
+      const frame = currentPage.frames.find((f) => f.id === frameId);
       if (!frame) return;
 
       const element = frame.elements.find((el) => el.id === elementId);
       if (!element) return;
 
-      // Position is already adjusted in Frame component to be top-left corner
       setLiveElementDimensions({
         x: frame.x + position.x,
         y: frame.y + position.y,
@@ -68,7 +73,7 @@ export function useElementInteractions(
         height: element.height,
       });
     },
-    [activePage, setLiveElementDimensions]
+    [setLiveElementDimensions]
   );
 
   const handleElementDragEnd = useCallback(
@@ -76,8 +81,9 @@ export function useElementInteractions(
       moveElement(frameId, elementId, position);
       activateElementAndFrame(frameId, elementId);
       setLiveElementDimensions(null);
+      setIsInMove(false);
     },
-    [moveElement, activateElementAndFrame, setLiveElementDimensions]
+    [moveElement, activateElementAndFrame, setLiveElementDimensions, setIsInMove]
   );
 
   return {

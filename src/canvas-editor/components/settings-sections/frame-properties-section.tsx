@@ -1,11 +1,13 @@
+import { useRef, useEffect, useMemo } from "react";
 import { useCanvasStore } from "../../store/canvas-editor.store";
-import { SettingsSection, SettingsInputGroup, SettingsColorRow } from "./settings-sections.boillerplate";
+import { SettingsSection, SettingsInputGroup, SettingsColorRow } from "./settings-sections.boilerplate";
 import { SettingsInput } from "../settings-input";
 import { Separator } from "@/components/shadcn/ui/separator";
 import { ColorLike } from "color";
-import { useMemo } from "react";
+import { handleNameInputFormat } from "../../helpers/input.helper";
 
 export const FramePropertiesSection = () => {
+  const lastValidNameRef = useRef<string>("");
   const activeFrame = useCanvasStore((state) => state.activeFrame);
   const liveFrameDimensions = useCanvasStore((state) => state.liveFrameDimensions);
   const updateFrameName = useCanvasStore((state) => state.updateFrameName);
@@ -15,6 +17,13 @@ export const FramePropertiesSection = () => {
   const updateFrameBorderColor = useCanvasStore((state) => state.updateFrameBorderColor);
   const updateFrameBorderWidth = useCanvasStore((state) => state.updateFrameBorderWidth);
   const updateFrameBorderRadius = useCanvasStore((state) => state.updateFrameBorderRadius);
+
+  // Store the last valid name when frame changes
+  useEffect(() => {
+    if (activeFrame) {
+      lastValidNameRef.current = activeFrame.name;
+    }
+  }, [activeFrame?.id]);
 
   const displayFrame = useMemo(
     () =>
@@ -32,7 +41,16 @@ export const FramePropertiesSection = () => {
 
   const handleNameChange = (name: string) => {
     if (activeFrame) {
+      // Allow spaces during typing, but trim on blur
       updateFrameName(activeFrame.id, name);
+    }
+  };
+
+  const handleNameBlur = (name: string) => {
+    if (activeFrame) {
+      const formattedName = handleNameInputFormat(name, lastValidNameRef.current);
+      updateFrameName(activeFrame.id, formattedName);
+      lastValidNameRef.current = formattedName;
     }
   };
 
@@ -97,7 +115,13 @@ export const FramePropertiesSection = () => {
   return (
     <SettingsSection title="Frame Properties">
       <div className="flex flex-col gap-3">
-        <SettingsInput label="Frame name" value={displayFrame.name} onChange={handleNameChange} labelIn />
+        <SettingsInput
+          label="Frame name"
+          value={displayFrame.name}
+          onChange={handleNameChange}
+          onBlur={handleNameBlur}
+          labelIn
+        />
         <Separator />
         <SettingsInputGroup title="Position">
           <SettingsInput

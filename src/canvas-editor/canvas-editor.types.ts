@@ -11,7 +11,12 @@ export type StageRef = React.RefObject<Konva.Stage | null>;
 
 export type EditorStore = RootSlice & GridSlice & PageSlice & FrameSlice & ElementSlice;
 
-export type SliceFactory<T> = StateCreator<EditorStore, [["zustand/persist", unknown]], [], T>;
+export type SliceFactory<T> = StateCreator<
+  EditorStore,
+  [["zustand/devtools", unknown], ["zustand/persist", unknown]],
+  [],
+  T
+>;
 
 export type Page = {
   id: string;
@@ -23,6 +28,7 @@ export type Page = {
 export type Frame = {
   id: string;
   name: string;
+  isInMove: boolean;
   x: number;
   y: number;
   width: number;
