@@ -13,4 +13,4 @@
 - NextAuth? (Better Auth?)
 
 
-Godzin na projekcie: 13
+Godzin na projekcie: 30
